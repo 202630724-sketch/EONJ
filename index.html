@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>아쿠아리움: 물고기 밥주기 게임 🐠</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --sea-dark: #0a2239;
+            --sea-mid: #1d6a96;
+            --sea-light: #53b3cb;
+            --sea-foam: #b9e3de;
+            --accent-gold: #f7b05b;
+            --coral-red: #ff6b6b;
+            --white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--sea-dark);
+            color: var(--white);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Header UI */
+        header {
+            text-align: center;
+            margin-bottom: 10px;
+            z-index: 10;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            color: var(--sea-foam);
+            text-shadow: 0 0 10px rgba(83, 179, 203, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        header p {
+            font-size: 0.95rem;
+            color: #a0c4ff;
+            margin-top: 4px;
+        }
+
+        /* Game Dashboard */
+        .dashboard {
+            width: 800px;
+            max-width: 95vw;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 15px;
+            z-index: 10;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .stat-item i {
+            color: var(--accent-gold);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #f7b05b, #f3722c);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px rgba(247, 176, 91, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(247, 176, 91, 0.5);
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Canvas / Aquarium */
+        #game-container {
+            position: relative;
+            width: 800px;
+            height: 500px;
+            max-width: 95vw;
+            max-height: 65vh;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 0 50px rgba(83, 179, 203, 0.3);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            background: linear-gradient(180deg, #1d6a96 0%, #0a2239 100%);
+            cursor: crosshair;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Overlay Message */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 34, 57, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            backdrop-filter: blur(4px);
+        }
+
+        .overlay h2 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--coral-red);
+        }
+
+        .overlay p {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--sea-foam);
+        }
+
+        /* Instructions */
+        .instructions {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #8da9c4;
+            text-align: center;
+            z-index: 10;
+        }
+
+        /* Floating text animation */
+        .floating-text {
+            position: absolute;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--accent-gold);
+            pointer-events: none;
+            animation: floatUp 0.8s ease-out forwards;
+            z-index: 15;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-30px); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1><i class="fa-solid fa-fish-fins"></i> 아쿠아리움: 밥주기 게임</h1>
+        <p>수조 안을 클릭하여 먹이를 주고 물고기를 키워보세요!</p>
+    </header>
+
+    <div class="dashboard">
+        <div class="stat-item">
+            <i class="fa-solid fa-star"></i>
+            <span>점수: <span id="score">0</span></span>
+        </div>
+        <div class="stat-item">
+            <i class="fa-solid fa-fish"></i>
+            <span>물고기: <span id="fish-count">3</span>마리</span>
+        </div>
+        <button class="btn" id="buy-fish-btn" onclick="buyFish()">
+            <i class="fa-solid fa-plus"></i> 물고기 입양 (50점)
+        </button>
+    </div>
+
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- Game Over / Start Overlay -->
+        <div class="overlay" id="overlay" style="display: none;">
+            <h2 id="overlay-title">게임 오버!</h2>
+            <p id="overlay-desc">모든 물고기가 배고파서 떠났습니다...</p>
+            <button class="btn" onclick="resetGame()" style="font-size: 1.2rem; padding: 12px 28px;">
+                <i class="fa-solid fa-rotate-right"></i> 다시 시작하기
+            </button>
+        </div>
+    </div>
+
+    <div class="instructions">
+        💡 <b>팁:</b> 화면을 클릭하면 먹이가 떨어집니다. 물고기는 배가 고프면 몸 색깔이 어두워집니다!
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('game-container');
+
+        // Canvas Resolution Set
+        function resizeCanvas() {
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // State Variables
+        let score = 0;
+        let fishes = [];
+        let foods = [];
+        let bubbles = [];
+        let isGameOver = false;
+
+        // Fish Palette
+        const fishColors = [
+            { main: '#ff70a6', fin: '#ff9770' }, // Pink/Orange
+            { main: '#ff9770', fin: '#ffd670' }, // Orange/Yellow
+            { main: '#70d6ff', fin: '#ff70a6' }, // Blue/Pink
+            { main: '#e9ff70', fin: '#70d6ff' }, // Yellow/Blue
+            { main: '#a0c4ff', fin: '#bdb2ff' }  // Purple/LightBlue
+        ];
+
+        // Background Bubbles
+        class Bubble {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + Math.random() * 20;
+                this.radius = Math.random() * 4 + 2;
+                this.speed = Math.random() * 1 + 0.5;
+                this.alpha = Math.random() * 0.5 + 0.2;
+            }
+            update() {
+                this.y -= this.speed;
+                this.x += Math.sin(this.y * 0.05) * 0.5;
+                if (this.y < -10) this.reset();
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+
+        // Food Class
+        class Food {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.radius = 5;
+                this.speed = 1.5;
+            }
+            update() {
+                if (this.y < canvas.height - 15) {
+                    this.y += this.speed;
+                }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#f7b05b';
+                ctx.fill();
+                ctx.strokeStyle = '#e85d04';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                ctx.closePath();
+            }
+        }
+
+        // Fish Class
+        class Fish {
+            constructor(x, y) {
+                this.x = x || Math.random() * (canvas.width - 100) + 50;
+                this.y = y || Math.random() * (canvas.height - 100) + 50;
+                this.size = Math.random() * 10 + 20; // Size 20-30
+                this.vx = (Math.random() - 0.5) * 3;
+                this.vy = (Math.random() - 0.5) * 1.5;
+                this.color = fishColors[Math.floor(Math.random() * fishColors.length)];
+                this.hunger = 100; // 0: Starving, 100: Full
+                this.targetFood = null;
+                this.tailAngle = 0;
+            }
+
+            update() {
+                // Decrease hunger over time
+                this.hunger -= 0.05;
+
+                // Find nearest food if hungry
+                if (this.hunger < 80 && foods.length > 0) {
+                    let minDistance = Infinity;
+                    let nearest = null;
+                    foods.forEach(food => {
+                        let dist = Math.hypot(food.x - this.x, food.y - this.y);
+                        if (dist < minDistance) {
+                            minDistance = dist;
+                            nearest = food;
+                        }
+                    });
+                    this.targetFood = nearest;
+                } else {
+                    this.targetFood = null;
+                }
+
+                // Swim towards food or wander
+                if (this.targetFood) {
+                    let angle = Math.atan2(this.targetFood.y - this.y, this.targetFood.x - this.x);
+                    this.vx = Math.cos(angle) * 2.5;
+                    this.vy = Math.sin(angle) * 2.5;
+                } else {
+                    // Random gentle steering
+                    if (Math.random() < 0.02) {
+                        this.vx += (Math.random() - 0.5) * 0.5;
+                        this.vy += (Math.random() - 0.5) * 0.3;
+                    }
+                    // Limit speed
+                    let speed = Math.hypot(this.vx, this.vy);
+                    if (speed > 2) {
+                        this.vx = (this.vx / speed) * 2;
+                        this.vy = (this.vy / speed) * 2;
+                    }
+                }
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Wall bounce
+                if (this.x < 30) { this.x = 30; this.vx *= -1; }
+                if (this.x > canvas.width - 30) { this.x = canvas.width - 30; this.vx *= -1; }
+                if (this.y < 30) { this.y = 30; this.vy *= -1; }
+                if (this.y > canvas.height - 30) { this.y = canvas.height - 30; this.vy *= -1; }
+
+                // Check eating food
+                foods.forEach((food, index) => {
+                    let dist = Math.hypot(food.x - this.x, food.y - this.y);
+                    if (dist < this.size) {
+                        foods.splice(index, 1);
+                        this.hunger = Math.min(100, this.hunger + 35);
+                        score += 10;
+                        updateDashboard();
+                        showFloatingText(this.x, this.y, '+10');
+                    }
+                });
+
+                this.tailAngle += 0.15;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+
+                // Face direction
+                let facingRight = this.vx >= 0;
+                if (!facingRight) ctx.scale(-1, 1);
+
+                // Color tint according to hunger
+                let hungerRatio = Math.max(0.2, this.hunger / 100);
+
+                // Tail Fin
+                ctx.beginPath();
+                let tailWiggle = Math.sin(this.tailAngle) * 5;
+                ctx.moveTo(-this.size, 0);
+                ctx.lineTo(-this.size - 15, -10 + tailWiggle);
+                ctx.lineTo(-this.size - 15, 10 + tailWiggle);
+                ctx.fillStyle = this.color.fin;
+                ctx.fill();
+                ctx.closePath();
+
+                // Body
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.size, this.size * 0.6, 0, 0, Math.PI * 2);
+                ctx.fillStyle = this.color.main;
+                ctx.globalAlpha = hungerRatio; // Dim when hungry
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                ctx.closePath();
+
+                // Eye
+                ctx.beginPath();
+                ctx.arc(this.size * 0.5, -this.size * 0.2, 3, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(this.size * 0.5 + 1, -this.size * 0.2, 1.5, 0, Math.PI * 2);
+                ctx.fillStyle = '#000000';
+                ctx.fill();
+
+                // Hunger Bar
+                if (this.hunger < 60) {
+                    ctx.restore();
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                    ctx.fillRect(this.x - 15, this.y - this.size - 12, 30, 5);
+                    ctx.fillStyle = this.hunger < 30 ? '#ff6b6b' : '#ffd166';
+                    ctx.fillRect(this.x - 15, this.y - this.size - 12, (this.hunger / 100) * 30, 5);
+                }
+
+                ctx.restore();
+            }
+        }
+
+        // Initialize Game Elements
+        function init() {
+            fishes = [];
+            foods = [];
+            bubbles = [];
+            score = 0;
+            isGameOver = false;
+
+            for (let i = 0; i < 20; i++) {
+                bubbles.push(new Bubble());
+            }
+
+            for (let i = 0; i < 3; i++) {
+                fishes.push(new Fish());
+            }
+
+            document.getElementById('overlay').style.display = 'none';
+            updateDashboard();
+        }
+
+        // Add Food on Click
+        container.addEventListener('click', (e) => {
+            if (isGameOver) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            foods.push(new Food(x, y));
+        });
+
+        // Buy Extra Fish
+        function buyFish() {
+            if (score >= 50) {
+                score -= 50;
+                fishes.push(new Fish());
+                updateDashboard();
+                showFloatingText(canvas.width / 2, canvas.height / 2, '새 물고기 합류!');
+            }
+        }
+
+        // Floating Text Effect
+        function showFloatingText(x, y, text) {
+            const el = document.createElement('div');
+            el.className = 'floating-text';
+            el.innerText = text;
+            el.style.left = `${x}px`;
+            el.style.top = `${y}px`;
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+        }
+
+        // Update UI Stats
+        function updateDashboard() {
+            document.getElementById('score').innerText = score;
+            document.getElementById('fish-count').innerText = fishes.length;
+            document.getElementById('buy-fish-btn').disabled = score < 50;
+        }
+
+        // Game Loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Render Bubbles
+            bubbles.forEach(b => {
+                b.update();
+                b.draw();
+            });
+
+            // Render Foods
+            foods.forEach((f, idx) => {
+                f.update();
+                f.draw();
+            });
+
+            // Render & Update Fishes
+            for (let i = fishes.length - 1; i >= 0; i--) {
+                let fish = fishes[i];
+                fish.update();
+                fish.draw();
+
+                // Fish Starvation Check
+                if (fish.hunger <= 0) {
+                    showFloatingText(fish.x, fish.y, '💀');
+                    fishes.splice(i, 1);
+                    updateDashboard();
+                }
+            }
+
+            // Check Game Over
+            if (fishes.length === 0 && !isGameOver) {
+                isGameOver = true;
+                document.getElementById('overlay').style.display = 'flex';
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        function resetGame() {
+            init();
+        }
+
+        // Start Game
+        init();
+        animate();
+    </script>
+</body>
+</html>
