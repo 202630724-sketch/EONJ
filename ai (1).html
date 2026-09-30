@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>숙 쓱 (숙제 쓱- 끝) - AI 숙제 우선순위 & 타임라인 플래너</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'Roboto', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                        },
+                        accent: {
+                            purple: '#8b5cf6',
+                            neon: '#00f2fe',
+                            amber: '#f59e0b',
+                            rose: '#f43f5e'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Canvas-Confetti for Celebration Effect -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Pretendard WebFont -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Glassmorphism Styling */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(229, 231, 235, 0.8);
+        }
+        .dark .glass-card {
+            background: rgba(24, 24, 27, 0.88);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(63, 63, 70, 0.6);
+        }
+
+        /* Glow Accents */
+        .neon-glow {
+            box-shadow: 0 0 25px rgba(34, 197, 94, 0.25);
+        }
+        .dark .neon-glow {
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.35);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.4);
+            border-radius: 9999px;
+        }
+
+        .touch-active:active {
+            transform: scale(0.98);
+        }
+
+        /* Print Style */
+        @media print {
+            header, footer, .no-print {
+                display: none !important;
+            }
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            .glass-card {
+                border: 1px solid #ccc !important;
+                box-shadow: none !important;
+                background: white !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-zinc-950 dark:text-zinc-100 min-h-screen flex flex-col justify-between selection:bg-brand-500 selection:text-white">
+
+    <header class="sticky top-0 z-40 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-gray-200 dark:border-zinc-800 transition-colors">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchStep(1)">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-500 to-accent-neon flex items-center justify-center text-white shadow-lg shadow-brand-500/20 font-black text-xl tracking-tighter">
+                    쓱
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <h1 class="text-xl font-black tracking-tight text-gray-900 dark:text-white">숙 쓱</h1>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-100 dark:bg-brand-500/20 text-brand-600 dark:text-brand-400 border border-brand-500/30">AI 우선순위 플래너</span>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-zinc-400">숙제 쓱- 끝내는 초간단 스마트 플래너</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2 no-print">
+                <button type="button" onclick="toggleTheme()" class="p-2.5 rounded-xl border border-gray-200 dark:border-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-600 dark:text-zinc-300 transition-all touch-active" aria-label="다크모드 토글">
+                    <i class="fa-solid fa-sun hidden dark:block text-amber-400"></i>
+                    <i class="fa-solid fa-moon block dark:hidden text-zinc-700"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-3 sm:px-6 py-6 flex-grow w-full">
+
+        <!-- Stepper Navigation -->
+        <nav class="mb-8 bg-white dark:bg-zinc-900 p-3 sm:p-4 rounded-3xl border border-gray-200 dark:border-zinc-800 shadow-sm no-print">
+            <div class="grid grid-cols-5 gap-1 text-center font-bold">
+                
+                <button type="button" onclick="switchStep(1)" id="step-nav-1" class="step-nav flex flex-col items-center p-2 rounded-2xl transition-all touch-active">
+                    <span id="step-num-1" class="w-8 h-8 rounded-xl bg-brand-500 text-white flex items-center justify-center text-xs font-black mb-1 shadow-md">1</span>
+                    <span class="text-[11px] sm:text-xs text-gray-700 dark:text-zinc-300">오늘 일정</span>
+                </button>
+
+                <button type="button" onclick="switchStep(2)" id="step-nav-2" class="step-nav flex flex-col items-center p-2 rounded-2xl transition-all touch-active opacity-40">
+                    <span id="step-num-2" class="w-8 h-8 rounded-xl bg-gray-200 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 flex items-center justify-center text-xs font-black mb-1">2</span>
+                    <span class="text-[11px] sm:text-xs text-gray-500 dark:text-zinc-500">숙제 작성</span>
+                </button>
+
+                <button type="button" onclick="switchStep(3)" id="step-nav-3" class="step-nav flex flex-col items-center p-2 rounded-2xl transition-all touch-active opacity-40">
+                    <span id="step-num-3" class="w-8 h-8 rounded-xl bg-gray-200 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 flex items-center justify-center text-xs font-black mb-1">3</span>
+                    <span class="text-[11px] sm:text-xs text-gray-500 dark:text-zinc-500">중요/처벌</span>
+                </button>
+
+                <button type="button" onclick="switchStep(4)" id="step-nav-4" class="step-nav flex flex-col items-center p-2 rounded-2xl transition-all touch-active opacity-40">
+                    <span id="step-num-4" class="w-8 h-8 rounded-xl bg-gray-200 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 flex items-center justify-center text-xs font-black mb-1">4</span>
+                    <span class="text-[11px] sm:text-xs text-gray-500 dark:text-zinc-500">내 스타일</span>
+                </button>
+
+                <button type="button" onclick="switchStep(5)" id="step-nav-5" class="step-nav flex flex-col items-center p-2 rounded-2xl transition-all touch-active opacity-40">
+                    <span id="step-num-5" class="w-8 h-8 rounded-xl bg-gray-200 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 flex items-center justify-center text-xs font-black mb-1">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </span>
+                    <span class="text-[11px] sm:text-xs text-gray-500 dark:text-zinc-500">AI 결과</span>
+                </button>
+
+            </div>
+        </nav>
+
+        <!-- STEP 1: Today's Academy Schedule -->
+        <section id="step-section-1" class="step-section space-y-6">
+            <div class="glass-card rounded-3xl p-5 sm:p-8 shadow-xl">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="p-3 bg-brand-500/10 text-brand-500 rounded-2xl border border-brand-500/20">
+                        <i class="fa-solid fa-calendar-days text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">STEP 1. 오늘 학원 및 전체 일정</h2>
+                        <p class="text-xs sm:text-sm text-gray-500 dark:text-zinc-400 mt-1">오늘 숙제를 시작할 시각, 학원 수업 시간, 목표 취침 시각을 입력해 주세요.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                    <div class="p-4 rounded-2xl bg-gray-100/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800">
+                        <label class="block text-xs font-bold text-gray-700 dark:text-zinc-300 mb-2 flex items-center">
+                            <i class="fa-solid fa-play text-brand-500 mr-2"></i> 오늘 숙제 시작 시각
+                        </label>
+                        <input type="time" id="start-time" value="16:00" class="w-full rounded-xl px-4 py-3 font-bold text-base bg-white dark:bg-zinc-950 border border-gray-300 dark:border-zinc-700">
+                    </div>
+
+                    <div class="p-4 rounded-2xl bg-gray-100/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800">
+                        <label class="block text-xs font-bold text-gray-700 dark:text-zinc-300 mb-2 flex items-center">
+                            <i class="fa-solid fa-bed text-brand-500 mr-2"></i> 목표 취침 시각
+                        </label>
+                        <input type="time" id="sleep-time" value="23:30" class="w-full rounded-xl px-4 py-3 font-bold text-base bg-white dark:bg-zinc-950 border border-gray-300 dark:border-zinc-700">
+                    </div>
+                </div>
+
+                <div class="p-4 sm:p-5 rounded-2xl bg-gray-100/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800 mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <label class="text-xs font-bold text-gray-700 dark:text-zinc-300 flex items-center">
+                            <i class="fa-solid fa-school text-brand-500 mr-2"></i> 오늘 가야 하는 학원 / 수업 일정
+                        </label>
+                        <button type="button" onclick="addAcademyItem()" class="px-3 py-2 bg-brand-500/10 hover:bg-brand-500/20 text-brand-600 dark:text-brand-400 border border-brand-500/30 font-bold rounded-xl text-xs flex items-center space-x-1 transition-all touch-active">
+                            <i class="fa-solid fa-plus mr-1"></i>
+                            <span>학원 추가</span>
+                        </button>
+                    </div>
+
+                    <div id="academy-list" class="space-y-3">
+                        <!-- Dynamic Academy Schedule List -->
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-2">
+                    <button type="button" onclick="switchStep(2)" class="w-full sm:w-auto px-7 py-4 bg-brand-500 hover:bg-brand-600 text-white font-extrabold rounded-2xl shadow-lg shadow-brand-500/25 flex items-center justify-center space-x-2 transition-all touch-active">
+                        <span>다음: 숙제 등록하기</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 2: Homework List & Duration -->
+        <section id="step-section-2" class="step-section space-y-6 hidden">
+            <div class="glass-card rounded-3xl p-5 sm:p-8 shadow-xl">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="p-3 bg-brand-500/10 text-brand-500 rounded-2xl border border-brand-500/20">
+                        <i class="fa-solid fa-book-open text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">STEP 2. 숙제 입력 및 걸리는 시간</h2>
+                        <p class="text-xs sm:text-sm text-gray-500 dark:text-zinc-400 mt-1">오늘 해야 하는 과목/학원별 숙제와 예상 시간을 입력해 주세요.</p>
+                    </div>
+                </div>
+
+                <!-- Quick Presets -->
+                <div class="p-4 rounded-2xl bg-gray-100/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800 mb-6">
+                    <span class="text-xs font-bold text-gray-700 dark:text-zinc-300 mb-2.5 block flex items-center">
+                        <i class="fa-solid fa-bolt text-brand-500 mr-2"></i> 원클릭 숙제 빠르게 추가:
+                    </span>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" onclick="addPresetHomework('수학 문제집 3장 풀어오기', '수학', 40)" class="px-3 py-2 rounded-xl text-xs bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 hover:border-brand-500 text-gray-800 dark:text-zinc-200 transition-all touch-active">
+                            ➕ 수학 문제집 (40분)
+                        </button>
+                        <button type="button" onclick="addPresetHomework('영어 단어 50개 암기', '영어', 25)" class="px-3 py-2 rounded-xl text-xs bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 hover:border-brand-500 text-gray-800 dark:text-zinc-200 transition-all touch-active">
+                            ➕ 영어 단어 (25분)
+                        </button>
+                        <button type="button" onclick="addPresetHomework('국어 독서록 작성', '국어', 30)" class="px-3 py-2 rounded-xl text-xs bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 hover:border-brand-500 text-gray-800 dark:text-zinc-200 transition-all touch-active">
+                            ➕ 국어 독서록 (30분)
+                        </button>
+                        <button type="button" onclick="addPresetHomework('과학 탐구 프린트 작성', '과학', 20)" class="px-3 py-2 rounded-xl text-xs bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 hover:border-brand-500 text-gray-800 dark:text-zinc-200 transition-all touch-active">
+                            ➕ 과학 프린트 (20분)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Input Form -->
+                <div class="p-4 sm:p-5 rounded-2xl bg-gray-100/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800 mb-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-3">
+                        <div class="sm:col-span-5">
+                            <label class="block text-xs font-bold text-gray-700 dark:text-zinc-300 mb-1">숙제 이름 / 내용</label>
+                            <input type="text" id="hw-input-name" placeholder="예: 수학 워크북 12~15페이지" class="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-zinc-950 border border-gray-300 dark:border-zinc-700 text-sm">
+                        </div>
+                        <div class="sm:col-span-4">
+                            <label class="block text-xs font-bold text-gray-700 dark:text-zinc-300 mb-1">과목 또는 학원명</label>
+                            <select id="hw-input-subject" class="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-zinc-950 border border-gray-300 dark:border-zinc-700 text-sm">
+                                <option value="수학">수학</option>
+                                <option value="영어">영어</option>
+                                <option value="국어">국어</option>
+                                <option value="과학">과학</option>
+                                <option value="사회/역사">사회/역사</option>
+                                <option value="학교/기타">학교/기타</option>
+                            </select>
+                        </div>
+                        <div class="sm:col-span-3">
+                            <label class="block text-xs font-bold text-gray-700 dark:text-zinc-300 mb-1">예상 소요시간(분)</label>
+                            <input type="number" id="hw-input-duration" min="5" value="30" step="5" class="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-zinc-950 border border-gray-300 dark:border-zinc-700 text-sm">
+                        </div>
+                    </div>
+                    <button type="button" onclick="addHomeworkItem()" class="w-full py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center space-x-1 shadow-md touch-active">
+                        <i class="fa-solid fa-plus mr-1"></i>
+                        <span>목록에 추가하기</span>
+                    </button>
+                </div>
+
+                <!-- Homework List -->
+                <div id="homework-list" class="space-y-3 min-h-[120px]">
+                    <!-- Dynamic Items -->
+                </div>
+
+                <div class="flex flex-col sm:flex-row justify-between gap-3 pt-6">
+                    <button type="button" onclick="switchStep(1)" class="px-5 py-3.5 border border-gray-300 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-zinc-300 font-bold rounded-2xl text-xs transition-colors flex items-center justify-center space-x-1.5 touch-active order-2 sm:order-1">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>이전 단계</span>
+                    </button>
+                    <button type="button" onclick="switchStep(3)" class="px-7 py-4 bg-brand-500 hover:bg-brand-600 text-white font-extrabold rounded-2xl shadow-lg shadow-brand-500/25 flex items-center justify-center space-x-2 transition-all touch-active order-1 sm:order-2">
+                        <span>다음: 중요도 & 처벌 선택</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 3: Homework Importance & Punishment Level -->
+        <section id="step-section-3" class="step-section space-y-6 hidden">
+            <div class="glass-card rounded-3xl p-5 sm:p-8 shadow-xl">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="p-3 bg-brand-500/10 text-brand-500 rounded-2xl border border-brand-500/20">
+                        <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">STEP 3. 숙제별 중요도 및 처벌 경중</h2>
+                        <p class="text-xs sm:text-sm text-gray-500 dark:text-zinc-400 mt-1">숙제를 안 했을 때의 불이익(남기, 처벌, 벌점, 부모님 호출)의 위험도를 지정하세요.</p>
+                    </div>
+                </div>
+
+                <div id="importance-assign-list" class="space-y-4">
+                    <!-- Dynamic Importance Setup Items -->
+                </div>
+
+                <div class="flex flex-col sm:flex-row justify-between gap-3 pt-6">
+                    <button type="button" onclick="switchStep(2)" class="px-5 py-3.5 border border-gray-300 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-zinc-300 font-bold rounded-2xl text-xs transition-colors flex items-center justify-center space-x-1.5 touch-active order-2 sm:order-1">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>이전 단계</span>
+                    </button>
+                    <button type="button" onclick="switchStep(4)" class="px-7 py-4 bg-brand-500 hover:bg-brand-600 text-white font-extrabold rounded-2xl shadow-lg shadow-brand-500/25 flex items-center justify-center space-x-2 transition-all touch-active order-1 sm:order-2">
+                        <span>다음: 나의 학습 스타일</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 4: Student Learning Style & Strengths -->
+        <section id="step-section-4" class="step-section space-y-6 hidden">
+            <div class="glass-card rounded-3xl p-5 sm:p-8 shadow-xl">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="p-3 bg-brand-500/10 text-brand-500 rounded-2xl border border-brand-500/20">
+                        <i class="fa-solid fa-sliders text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">STEP 4. 나의 숙제 스타일 & 강점</h2>
+                        <p class="text-xs sm:text-sm text-gray-500 dark:text-zinc-400 mt-1">내가 선호하는 공부 방식과 자신 있는 과목을 알고리즘에 반영합니다.</p>
+                    </div>
+                </div>
+
+                <div class="space-y-5">
+                    <!-- Priority Strategy Preference -->
+                    <div class="p-4 sm:p-5 rounded-2xl bg-gray-100/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800">
+                        <label class="block font-bold text-gray-800 dark:text-zinc-200 mb-3 text-xs sm:text-sm flex items-center">
+                            <i class="fa-solid fa-bullseye text-brand-500 mr-2"></i> 어떤 순서 전략을 선호하나요?
+                        </label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <label class="cursor-pointer border border-gray-300 dark:border-zinc-700 rounded-2xl p-4 bg-white dark:bg-zinc-950 flex flex-col justify-between hover:border-brand-500 transition-all touch-active">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="font-extrabold text-xs text-gray-900 dark:text-white">💪 어려운 과목 먼저!</span>
+                                    <input type="radio" name="style-pref" value="hard_first" class="accent-brand-500" checked>
+                                </div>
+                                <span class="text-[11px] text-gray-500 dark:text-zinc-400">집중력이 좋을 때 머리 아픈 숙제부터 확실하게 해결</span>
+                            </label>
+
+                            <label class="cursor-pointer border border-gray-300 dark:border-zinc-700 rounded-2xl p-4 bg-white dark:bg-zinc-950 flex flex-col justify-between hover:border-brand-500 transition-all touch-active">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="font-extrabold text-xs text-gray-900 dark:text-white">🎈 쉬운/빠른 숙제 먼저!</span>
+                                    <input type="radio" name="style-pref" value="easy_first" class="accent-brand-500">
+                                </div>
+                                <span class="text-[11px] text-gray-500 dark:text-zinc-400">빨리 끝나는 숙제를 지워나가며 빠르게 성취감 획득</span>
+                            </label>
+
+                            <label class="cursor-pointer border border-gray-300 dark:border-zinc-700 rounded-2xl p-4 bg-white dark:bg-zinc-950 flex flex-col justify-between hover:border-brand-500 transition-all touch-active">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="font-extrabold text-xs text-gray-900 dark:text-white">⏰ 마감/학원시간 임박순!</span>
+                                    <input type="radio" name="style-pref" value="urgent_first" class="accent-brand-500">
+                                </div>
+                                <span class="text-[11px] text-gray-500 dark:text-zinc-400">가장 먼저 제출하거나 오늘 가야 하는 학원 숙제 우선</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Strong Subject Select -->
+                    <div class="p-4 sm:p-5 rounded-2xl bg-gray-100/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800">
+                        <label class="block font-bold text-gray-800 dark:text-zinc-200 mb-2 text-xs sm:text-sm flex items-center">
+                            <i class="fa-solid fa-award text-brand-500 mr-2"></i> 내가 잘하거나 가장 자신 있는 과목
+                        </label>
+                        <select id="strong-subject" class="w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-950 border border-gray-300 dark:border-zinc-700 text-sm">
+                            <option value="none">특별히 없음 (모든 과목 균등 적용)</option>
+                            <option value="수학">수학</option>
+                            <option value="영어">영어</option>
+                            <option value="국어">국어</option>
+                            <option value="과학">과학</option>
+                            <option value="사회/역사">사회/역사</option>
+                        </select>
+                    </div>
+
+                    <!-- Focus Duration Option -->
+                    <div class="p-4 sm:p-5 rounded-2xl bg-gray-100/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800">
+                        <label class="block font-bold text-gray-800 dark:text-zinc-200 mb-2 text-xs sm:text-sm flex items-center">
+                            <i class="fa-solid fa-stopwatch text-brand-500 mr-2"></i> 나의 1회 연속 집중 시간 (포모도로 단위)
+                        </label>
+                        <select id="focus-span" class="w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-950 border border-gray-300 dark:border-zinc-700 text-sm">
+                            <option value="25">25분 집중 + 5분 휴식 (클래식 포모도로)</option>
+                            <option value="40" selected>40분 집중 + 10분 휴식 (학생 강력 추천! 몰입 보장)</option>
+                            <option value="50">50분 집중 + 10분 휴식 (마라톤 열공파)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row justify-between gap-3 pt-6">
+                    <button type="button" onclick="switchStep(3)" class="px-5 py-3.5 border border-gray-300 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-zinc-300 font-bold rounded-2xl text-xs transition-colors flex items-center justify-center space-x-1.5 touch-active order-2 sm:order-1">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>이전 단계</span>
+                    </button>
+                    <button type="button" onclick="generateAIReport()" class="px-8 py-4 bg-gradient-to-r from-brand-500 to-accent-neon hover:from-brand-600 hover:to-cyan-500 text-white font-black rounded-2xl shadow-xl shadow-brand-500/30 flex items-center justify-center space-x-2 transition-all touch-active text-base order-1 sm:order-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>AI 분석 리포트 생성하기</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 5: AI Algorithm Result & Report Dashboard -->
+        <section id="step-section-5" class="step-section space-y-6 hidden">
+            
+            <!-- Summary Banner -->
+            <div class="glass-card rounded-3xl p-5 sm:p-8 border-2 border-brand-500/50 shadow-2xl relative overflow-hidden neon-glow">
+                <div class="flex items-center space-x-2 bg-brand-500/10 border border-brand-500/30 px-3 py-1 rounded-full text-xs font-bold text-brand-600 dark:text-brand-400 w-fit mb-3">
+                    <i class="fa-solid fa-sparkles"></i>
+                    <span>AI 우선순위 분석 완료</span>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight mb-2">
+                    오늘 숙제, 이 순서대로만 하면 <span class="text-brand-500">쓱- 끝!</span>
+                </h2>
+                <p class="text-xs sm:text-sm text-gray-600 dark:text-zinc-300 leading-relaxed" id="report-summary-text">
+                    학원 일정, 처벌 위험도, 학생 맞춤 학습 스타일을 종합 계산하여 가장 완벽한 동선을 제시합니다.
+                </p>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
+                    <div class="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800">
+                        <span class="text-[10px] font-bold text-gray-500 dark:text-zinc-400">총 순수 숙제시간</span>
+                        <div class="text-base sm:text-lg font-black text-brand-600 dark:text-brand-400 mt-0.5" id="report-total-hw-time">0분</div>
+                    </div>
+                    <div class="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800">
+                        <span class="text-[10px] font-bold text-gray-500 dark:text-zinc-400">최종 종료 예정</span>
+                        <div class="text-base sm:text-lg font-black text-gray-900 dark:text-white mt-0.5" id="report-finish-time">00:00</div>
+                    </div>
+                    <div class="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800">
+                        <span class="text-[10px] font-bold text-gray-500 dark:text-zinc-400">목표 취침 여유</span>
+                        <div class="text-xs sm:text-sm font-black text-gray-900 dark:text-white mt-1" id="report-bedtime-status">안정적 🌙</div>
+                    </div>
+                    <div class="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800">
+                        <span class="text-[10px] font-bold text-gray-500 dark:text-zinc-400">숙제 성공 예측률</span>
+                        <div class="text-xs sm:text-sm font-black text-accent-purple mt-1" id="report-success-rate">98% 🚀</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Priority Task List & AI Reasoning -->
+            <div class="glass-card rounded-3xl p-5 sm:p-7 shadow-xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base sm:text-lg font-black text-gray-900 dark:text-white flex items-center">
+                        <i class="fa-solid fa-list-ol text-brand-500 mr-2"></i>
+                        🔥 AI 추천 숙제 우선순위 (이유 & 스마트팁)
+                    </h3>
+                    <span class="text-xs text-gray-500 dark:text-zinc-400">체크하여 완료하기</span>
+                </div>
+
+                <div id="ai-ranked-homework-list" class="space-y-3">
+                    <!-- Dynamic Ranked Homework Cards -->
+                </div>
+            </div>
+
+            <!-- Timeline Visual Schedule -->
+            <div class="glass-card rounded-3xl p-5 sm:p-7 shadow-xl">
+                <h3 class="text-base sm:text-lg font-black text-gray-900 dark:text-white mb-4 flex items-center">
+                    <i class="fa-regular fa-clock text-brand-500 mr-2"></i>
+                    ⏰ 추천 타임라인 & 중간 휴식
+                </h3>
+
+                <!-- Timeline Visual Progress Bar -->
+                <div id="timeline-visual-bar" class="w-full h-4 rounded-full bg-gray-200 dark:bg-zinc-800 flex overflow-hidden mb-5">
+                    <!-- Dynamic Visual Segments -->
+                </div>
+
+                <div id="timeline-detail-list" class="relative border-l-2 border-brand-500/40 ml-3 pl-5 space-y-4">
+                    <!-- Dynamic Timeline Items -->
+                </div>
+            </div>
+
+            <!-- Focus Pomodoro Timer -->
+            <div class="glass-card rounded-3xl p-5 sm:p-7 shadow-xl no-print">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base sm:text-lg font-black text-gray-900 dark:text-white flex items-center">
+                        <i class="fa-solid fa-stopwatch text-amber-500 mr-2"></i>
+                        ⏱️ 쓱- 집중 포모도로 타이머
+                    </h3>
+                    <span id="timer-status-badge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400">
+                        대기 중
+                    </span>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-center justify-between bg-gray-100/70 dark:bg-zinc-900/70 p-5 rounded-2xl border border-gray-200 dark:border-zinc-800 gap-4">
+                    <div>
+                        <div class="text-xs text-gray-500 dark:text-zinc-400 font-bold mb-1">현재 진행할 숙제</div>
+                        <div id="timer-task-title" class="text-base font-extrabold text-gray-900 dark:text-white">1위 숙제를 선택하여 시작하세요!</div>
+                    </div>
+
+                    <div class="flex items-center space-x-4">
+                        <div id="pomo-display" class="text-3xl sm:text-4xl font-black font-mono text-brand-500">
+                            25:00
+                        </div>
+
+                        <div class="flex items-center space-x-2">
+                            <button type="button" onclick="startPomodoro()" id="btn-pomo-start" class="p-3 bg-brand-500 hover:bg-brand-600 text-white rounded-xl shadow-md transition-all touch-active">
+                                <i class="fa-solid fa-play"></i>
+                            </button>
+                            <button type="button" onclick="pausePomodoro()" id="btn-pomo-pause" class="p-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-md transition-all touch-active hidden">
+                                <i class="fa-solid fa-pause"></i>
+                            </button>
+                            <button type="button" onclick="resetPomodoro()" class="p-3 bg-gray-200 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 rounded-xl hover:bg-gray-300 dark:hover:bg-zinc-700 transition-all touch-active">
+                                <i class="fa-solid fa-rotate-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Control Action Buttons -->
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-3 pt-4 no-print">
+                <button type="button" onclick="switchStep(2)" class="w-full sm:w-auto px-5 py-3.5 border border-gray-300 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-zinc-300 font-bold rounded-2xl text-xs transition-colors flex items-center justify-center space-x-1.5 touch-active">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <span>숙제 추가 및 수정하기</span>
+                </button>
+
+                <div class="flex items-center space-x-2 w-full sm:w-auto">
+                    <button type="button" onclick="window.print()" class="w-1/2 sm:w-auto px-5 py-3.5 bg-gray-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-extrabold rounded-2xl text-xs shadow-md transition-all touch-active flex items-center justify-center space-x-1.5">
+                        <i class="fa-solid fa-print"></i>
+                        <span>리포트 인쇄/PDF 저장</span>
+                    </button>
+                    <button type="button" onclick="resetAllData()" class="w-1/2 sm:w-auto px-5 py-3.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 font-bold rounded-2xl text-xs transition-all touch-active flex items-center justify-center space-x-1.5">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <span>처음부터 다시</span>
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Modal Dialog -->
+    <div id="app-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
+        <div class="glass-card max-w-sm w-full rounded-3xl p-6 text-center shadow-2xl border-2 border-brand-500">
+            <div class="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center mx-auto mb-3">
+                <i class="fa-solid fa-circle-info text-xl"></i>
+            </div>
+            <h3 id="modal-title" class="text-base font-black text-gray-900 dark:text-white mb-1">알림</h3>
+            <p id="modal-message" class="text-xs text-gray-600 dark:text-zinc-400 mb-5 leading-relaxed">메시지 내용</p>
+            <div id="modal-actions" class="flex justify-center space-x-2">
+                <button type="button" onclick="closeModal()" class="w-full py-3 bg-brand-500 text-white font-extrabold rounded-xl text-xs touch-active">
+                    확인
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-white dark:bg-zinc-900 border-t border-gray-200 dark:border-zinc-800 py-4 mt-12 text-center text-xs text-gray-500 dark:text-zinc-500 no-print">
+        <p>숙 쓱 (숙제 쓱- 끝!) &copy; AI 숙제 우선순위 플래너 | 학생을 위한 스마트 학습 도구</p>
+    </footer>
+
+    <script>
+        let currentStep = 1;
+        let pomodoroTimer = null;
+        let pomodoroSeconds = 25 * 60;
+        let isPomodoroRunning = false;
+
+        let appState = {
+            startTime: '16:00',
+            sleepTime: '23:30',
+            academies: [
+                { id: 101, name: '수학 학원', startTime: '17:00', endTime: '19:00' }
+            ],
+            homeworks: [
+                { id: 1, name: '수학 워크북 12~15p', subject: '수학', duration: 40, priority: '상', completed: false },
+                { id: 2, name: '영어 단어 50개 암기', subject: '영어', duration: 25, priority: '중', completed: false },
+                { id: 3, name: '국어 독서록 작성', subject: '국어', duration: 30, priority: '하', completed: false }
+            ],
+            style: {
+                pref: 'hard_first',
+                strongSubject: 'none',
+                focusSpan: 40
+            },
+            calculatedPlan: []
+        };
+
+        window.onload = function() {
+            if (window.lucide) lucide.createIcons();
+            loadLocalStorage();
+            renderAcademies();
+            renderHomeworks();
+            renderImportanceAssign();
+            switchStep(1);
+        };
+
+        // Theme Toggle Function
+        function toggleTheme() {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('sukssuk_theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('sukssuk_theme', 'dark');
+            }
+        }
+
+        if (localStorage.getItem('sukssuk_theme') === 'light') {
+            document.documentElement.classList.remove('dark');
+        }
+
+        // Helper Time Functions
+        function parseToMinutes(timeStr) {
+            if (!timeStr) return 0;
+            const [h, m] = timeStr.split(':').map(Number);
+            return (h || 0) * 60 + (m || 0);
+        }
+
+        function formatFromMinutes(minutesTotal) {
+            let h = Math.floor(minutesTotal / 60) % 24;
+            let m = minutesTotal % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        }
+
+        function switchStep(stepNum) {
+            currentStep = stepNum;
+
+            for (let i = 1; i <= 5; i++) {
+                const sec = document.getElementById(`step-section-${i}`);
+                const nav = document.getElementById(`step-nav-${i}`);
+                const num = document.getElementById(`step-num-${i}`);
+
+                if (sec) sec.classList.toggle('hidden', i !== stepNum);
+
+                if (nav && num) {
+                    if (i === stepNum) {
+                        nav.classList.remove('opacity-40');
+                        num.className = 'w-8 h-8 rounded-xl bg-brand-500 text-white flex items-center justify-center text-xs font-black mb-1 shadow-md';
+                    } else if (i < stepNum) {
+                        nav.classList.remove('opacity-40');
+                        num.className = 'w-8 h-8 rounded-xl bg-brand-500/20 text-brand-600 dark:text-brand-400 flex items-center justify-center text-xs font-black mb-1';
+                    } else {
+                        nav.classList.add('opacity-40');
+                        num.className = 'w-8 h-8 rounded-xl bg-gray-200 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 flex items-center justify-center text-xs font-black mb-1';
+                    }
+                }
+            }
+
+            if (stepNum === 3) renderImportanceAssign();
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (window.lucide) lucide.createIcons();
+            saveLocalStorage();
+        }
+
+        function renderAcademies() {
+            const listEl = document.getElementById('academy-list');
+            if (!listEl) return;
+
+            if (appState.academies.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-gray-500 dark:text-zinc-500 py-2 text-center">등록된 학원 일정이 없습니다.</p>`;
+                return;
+            }
+
+            listEl.innerHTML = appState.academies.map(ac => `
+                <div class="p-3 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl flex items-center justify-between gap-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 flex-grow">
+                        <input type="text" value="${ac.name}" onchange="updateAcademy(${ac.id}, 'name', this.value)" placeholder="학원 이름" class="px-3 py-1.5 text-xs rounded-lg bg-gray-50 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700">
+                        <div class="flex items-center space-x-1">
+                            <span class="text-[10px] text-gray-500 shrink-0">시작:</span>
+                            <input type="time" value="${ac.startTime}" onchange="updateAcademy(${ac.id}, 'startTime', this.value)" class="w-full px-2 py-1.5 text-xs rounded-lg bg-gray-50 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700">
+                        </div>
+                        <div class="flex items-center space-x-1">
+                            <span class="text-[10px] text-gray-500 shrink-0">종료:</span>
+                            <input type="time" value="${ac.endTime}" onchange="updateAcademy(${ac.id}, 'endTime', this.value)" class="w-full px-2 py-1.5 text-xs rounded-lg bg-gray-50 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700">
+                        </div>
+                    </div>
+                    <button type="button" onclick="removeAcademy(${ac.id})" class="p-2 text-gray-400 hover:text-rose-500 rounded-lg touch-active">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            `).join('');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function addAcademyItem() {
+            appState.academies.push({
+                id: Date.now(),
+                name: '영어 학원',
+                startTime: '19:30',
+                endTime: '21:00'
+            });
+            renderAcademies();
+        }
+
+        function updateAcademy(id, key, value) {
+            const target = appState.academies.find(a => a.id === id);
+            if (target) target[key] = value;
+        }
+
+        function removeAcademy(id) {
+            appState.academies = appState.academies.filter(a => a.id !== id);
+            renderAcademies();
+        }
+
+        function renderHomeworks() {
+            const listEl = document.getElementById('homework-list');
+            if (!listEl) return;
+
+            if (appState.homeworks.length === 0) {
+                listEl.innerHTML = `<div class="p-6 text-center text-xs text-gray-500 dark:text-zinc-500 border border-dashed border-gray-300 dark:border-zinc-800 rounded-2xl">
+                    등록된 숙제가 없습니다. 원클릭 추가 버튼이나 직접 등록해보세요!
+                </div>`;
+                return;
+            }
+
+            listEl.innerHTML = appState.homeworks.map(hw => `
+                <div class="p-3.5 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl flex items-center justify-between gap-3">
+                    <div class="flex-grow">
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-0.5 text-[10px] font-extrabold rounded-md bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20">${hw.subject}</span>
+                            <span class="text-xs font-bold text-gray-900 dark:text-white">${hw.name}</span>
+                        </div>
+                        <div class="text-[11px] text-gray-500 dark:text-zinc-400 mt-1 flex space-x-3">
+                            <span>⏱️ ${hw.duration}분 소요</span>
+                            <span>⭐ 중요도: ${hw.priority}</span>
+                        </div>
+                    </div>
+                    <button type="button" onclick="removeHomework(${hw.id})" class="p-2 text-gray-400 hover:text-rose-500 rounded-xl touch-active">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            `).join('');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function addPresetHomework(name, subject, duration) {
+            appState.homeworks.push({
+                id: Date.now(),
+                name: name,
+                subject: subject,
+                duration: duration,
+                priority: '중',
+                completed: false
+            });
+            renderHomeworks();
+        }
+
+        function addHomeworkItem() {
+            const nameInput = document.getElementById('hw-input-name');
+            const subjectSelect = document.getElementById('hw-input-subject');
+            const durationInput = document.getElementById('hw-input-duration');
+
+            if (!nameInput.value.trim()) {
+                showModal('숙제 이름 필요', '숙제 이름을 입력해주세요!');
+                return;
+            }
+
+            appState.homeworks.push({
+                id: Date.now(),
+                name: nameInput.value.trim(),
+                subject: subjectSelect.value,
+                duration: parseInt(durationInput.value) || 30,
+                priority: '중',
+                completed: false
+            });
+
+            nameInput.value = '';
+            renderHomeworks();
+        }
+
+        function removeHomework(id) {
+            appState.homeworks = appState.homeworks.filter(h => h.id !== id);
+            renderHomeworks();
+        }
+
+        function renderImportanceAssign() {
+            const container = document.getElementById('importance-assign-list');
+            if (!container) return;
+
+            if (appState.homeworks.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-500 py-4 text-center">등록된 숙제가 없습니다. STEP 2에서 숙제를 먼저 입력해주세요.</p>`;
+                return;
+            }
+
+            container.innerHTML = appState.homeworks.map(hw => `
+                <div class="p-4 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs font-bold text-gray-900 dark:text-white">${hw.name}</span>
+                            <span class="text-[10px] text-gray-500">(${hw.subject}, ${hw.duration}분)</span>
+                        </div>
+                        <p class="text-[11px] text-gray-500 dark:text-zinc-400 mt-1">안 해갔을 때의 처벌/불이익 심각도를 지정하세요.</p>
+                    </div>
+
+                    <div class="flex items-center space-x-1.5 shrink-0">
+                        <button type="button" onclick="setPriority(${hw.id}, '상')" class="px-3 py-2 rounded-xl text-xs font-bold transition-all ${hw.priority === '상' ? 'bg-rose-500 text-white shadow-md' : 'bg-gray-100 dark:bg-zinc-900 text-gray-600 dark:text-zinc-400'}">
+                            🚨 상 (남김/벌점/호출)
+                        </button>
+                        <button type="button" onclick="setPriority(${hw.id}, '중')" class="px-3 py-2 rounded-xl text-xs font-bold transition-all ${hw.priority === '중' ? 'bg-amber-500 text-white shadow-md' : 'bg-gray-100 dark:bg-zinc-900 text-gray-600 dark:text-zinc-400'}">
+                            ⚠️ 중 (경고/잔소리)
+                        </button>
+                        <button type="button" onclick="setPriority(${hw.id}, '하')" class="px-3 py-2 rounded-xl text-xs font-bold transition-all ${hw.priority === '하' ? 'bg-brand-500 text-white shadow-md' : 'bg-gray-100 dark:bg-zinc-900 text-gray-600 dark:text-zinc-400'}">
+                            🎈 하 (소량 감점)
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setPriority(hwId, level) {
+            const hw = appState.homeworks.find(h => h.id === hwId);
+            if (hw) {
+                hw.priority = level;
+                renderImportanceAssign();
+            }
+        }
+
+        function generateAIReport() {
+            if (appState.homeworks.length === 0) {
+                showModal('숙제 필요', '우선순위를 정할 숙제를 최소 1개 이상 등록해주세요.');
+                switchStep(2);
+                return;
+            }
+
+            // Save Inputs
+            appState.startTime = document.getElementById('start-time').value || '16:00';
+            appState.sleepTime = document.getElementById('sleep-time').value || '23:30';
+
+            const selectedStyle = document.querySelector('input[name="style-pref"]:checked');
+            appState.style.pref = selectedStyle ? selectedStyle.value : 'hard_first';
+            appState.style.strongSubject = document.getElementById('strong-subject').value || 'none';
+            appState.style.focusSpan = parseInt(document.getElementById('focus-span').value) || 40;
+
+            const startMin = parseToMinutes(appState.startTime);
+            const sleepMin = parseToMinutes(appState.sleepTime);
+
+            // AI Priority Scoring Algorithm
+            const homeworkWithScores = appState.homeworks.map(hw => {
+                let score = 0;
+
+                // 1. Importance & Punishment Level
+                if (hw.priority === '상') score += 50;
+                else if (hw.priority === '중') score += 30;
+                else score += 10;
+
+                // 2. Schedule Urgency Matching
+                const matchingAcademy = appState.academies.find(ac => ac.name.includes(hw.subject) || hw.subject.includes(ac.name));
+                if (matchingAcademy) {
+                    const acStartMin = parseToMinutes(matchingAcademy.startTime);
+                    if (acStartMin > startMin) {
+                        const timeUntilAcademy = acStartMin - startMin;
+                        if (timeUntilAcademy < 120) score += 40;
+                        else score += 20;
+                    }
+                }
+
+                // 3. Learning Preference Weight
+                if (appState.style.pref === 'hard_first') {
+                    score += (hw.duration / 10) * 3;
+                } else if (appState.style.pref === 'easy_first') {
+                    score += (100 - hw.duration) * 0.3;
+                } else if (appState.style.pref === 'urgent_first') {
+                    if (matchingAcademy) score += 35;
+                }
+
+                // 4. Strong Subject Adjustment
+                if (appState.style.strongSubject !== 'none' && hw.subject === appState.style.strongSubject) {
+                    score += 15;
+                }
+
+                return { ...hw, aiScore: Math.round(score) };
+            });
+
+            // Sort Descending
+            homeworkWithScores.sort((a, b) => b.aiScore - a.aiScore);
+            appState.calculatedPlan = homeworkWithScores;
+
+            // Generate Schedule Timeline & Breaks
+            let currentMin = startMin;
+            let totalHwDuration = 0;
+
+            const sortedAcademies = [...appState.academies].map(ac => ({
+                name: ac.name,
+                start: parseToMinutes(ac.startTime),
+                end: parseToMinutes(ac.endTime)
+            })).sort((a, b) => a.start - b.start);
+
+            const timelineItems = [];
+
+            homeworkWithScores.forEach((hw, idx) => {
+                totalHwDuration += hw.duration;
+                let remainingHw = hw.duration;
+
+                while (remainingHw > 0) {
+                    let ongoingAc = sortedAcademies.find(ac => currentMin >= ac.start && currentMin < ac.end);
+                    if (ongoingAc) {
+                        timelineItems.push({
+                            type: 'ACADEMY',
+                            title: `🏫 ${ongoingAc.name}`,
+                            start: formatFromMinutes(currentMin),
+                            end: formatFromMinutes(ongoingAc.end),
+                            duration: ongoingAc.end - currentMin
+                        });
+                        currentMin = ongoingAc.end;
+                        continue;
+                    }
+
+                    let nextAc = sortedAcademies.find(ac => ac.start > currentMin);
+                    let maxAvailableSlot = remainingHw;
+                    if (nextAc && (currentMin + maxAvailableSlot > nextAc.start)) {
+                        maxAvailableSlot = nextAc.start - currentMin;
+                    }
+
+                    if (maxAvailableSlot <= 0) {
+                        currentMin = nextAc.end;
+                        continue;
+                    }
+
+                    let currentChunk = Math.min(remainingHw, maxAvailableSlot, appState.style.focusSpan);
+                    let blockEnd = currentMin + currentChunk;
+
+                    timelineItems.push({
+                        type: 'HW',
+                        title: hw.name,
+                        subject: hw.subject,
+                        rank: idx + 1,
+                        start: formatFromMinutes(currentMin),
+                        end: formatFromMinutes(blockEnd),
+                        duration: currentChunk
+                    });
+
+                    currentMin = blockEnd;
+                    remainingHw -= currentChunk;
+
+                    if (remainingHw > 0 && (!nextAc || currentMin < nextAc.start)) {
+                        timelineItems.push({
+                            type: 'BREAK',
+                            title: '☕ 10분 휴식',
+                            start: formatFromMinutes(currentMin),
+                            end: formatFromMinutes(currentMin + 10),
+                            duration: 10
+                        });
+                        currentMin += 10;
+                    }
+                }
+            });
+
+            // Update Summary Stats
+            document.getElementById('report-total-hw-time').innerText = `${totalHwDuration}분`;
+            document.getElementById('report-finish-time').innerText = formatFromMinutes(currentMin);
+
+            const bedtimeStatus = document.getElementById('report-bedtime-status');
+            if (currentMin <= sleepMin) {
+                bedtimeStatus.innerText = '안정적 🌙';
+                bedtimeStatus.className = 'text-xs sm:text-sm font-black text-brand-500 mt-1';
+            } else {
+                bedtimeStatus.innerText = '취침시간 초과 ⚠️';
+                bedtimeStatus.className = 'text-xs sm:text-sm font-black text-rose-500 mt-1';
+            }
+
+            renderRankedCards(homeworkWithScores);
+            renderTimeline(timelineItems, startMin, currentMin);
+
+            switchStep(5);
+
+            confetti({
+                particleCount: 80,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+
+        function getTaskTipAndReason(hw, rank) {
+            let reason = "";
+            let tip = "";
+
+            if (hw.priority === '상') {
+                reason = "안 했을 때의 불이익/처벌 경중이 '상'으로 매우 무겁기 때문에 최우선 배치되었습니다.";
+            } else if (rank === 1) {
+                reason = "학습 스타일 가중치와 소요시간 효율을 고려한 결과 출발 과목으로 가장 적절합니다.";
+            } else {
+                reason = "핵심 과목 완수 후 몰입도를 유지하면서 완성하기에 최적인 순서입니다.";
+            }
+
+            if (hw.subject === '수학') tip = "💡 팁: 개념 공식 노트와 풀이장을 미리 펴두고 40분 타이머로 집중하세요.";
+            else if (hw.subject === '영어') tip = "💡 팁: 소리 내어 읽으며 암기하면 단어 완수 시간이 대폭 단축됩니다.";
+            else if (hw.subject === '국어') tip = "💡 팁: 지문의 핵심 요약 문장부터 찾아 밑줄 치며 작성하세요.";
+            else tip = "💡 팁: 타이머를 켜두고 스마트폰은 딴 주머니에 넣어두세요!";
+
+            return { reason, tip };
+        }
+
+        function renderRankedCards(rankedHw) {
+            const container = document.getElementById('ai-ranked-homework-list');
+            if (!container) return;
+
+            container.innerHTML = rankedHw.map((hw, idx) => {
+                const { reason, tip } = getTaskTipAndReason(hw, idx + 1);
+                return `
+                    <div class="p-4 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl shadow-sm hover:border-brand-500/50 transition-all">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-start space-x-3">
+                                <button type="button" onclick="toggleTaskComplete(${hw.id})" class="mt-0.5 w-6 h-6 rounded-lg border border-gray-300 dark:border-zinc-700 flex items-center justify-center ${hw.completed ? 'bg-brand-500 border-brand-500 text-white' : 'bg-gray-50 dark:bg-zinc-900'}">
+                                    ${hw.completed ? '<i class="fa-solid fa-check text-xs"></i>' : ''}
+                                </button>
+                                <div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-0.5 rounded-md text-[10px] font-black bg-brand-500 text-white">
+                                            우선순위 ${idx + 1}위
+                                        </span>
+                                        <span class="text-xs font-bold text-gray-500">(${hw.subject})</span>
+                                    </div>
+                                    <h4 class="text-sm font-extrabold text-gray-900 dark:text-white mt-1 ${hw.completed ? 'line-through opacity-50' : ''}">${hw.name}</h4>
+                                    <p class="text-xs text-gray-600 dark:text-zinc-400 mt-1 font-medium">${reason}</p>
+                                    <p class="text-[11px] text-brand-600 dark:text-brand-400 mt-1.5 font-bold">${tip}</p>
+                                </div>
+                            </div>
+
+                            <button type="button" onclick="setPomodoroTask('${hw.name}', ${hw.duration})" class="px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-xl text-xs font-bold shrink-0 transition-all touch-active flex items-center space-x-1">
+                                <i class="fa-solid fa-stopwatch"></i>
+                                <span class="hidden sm:inline">타이머 세팅</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function toggleTaskComplete(id) {
+            const hw = appState.homeworks.find(h => h.id === id);
+            if (hw) {
+                hw.completed = !hw.completed;
+                if (hw.completed) {
+                    confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+                }
+                generateAIReport();
+            }
+        }
+
+        function renderTimeline(timelineItems, startMin, totalEndMin) {
+            const visualBar = document.getElementById('timeline-visual-bar');
+            const detailList = document.getElementById('timeline-detail-list');
+
+            const totalSpan = totalEndMin - startMin || 1;
+
+            visualBar.innerHTML = timelineItems.map(item => {
+                const percent = Math.max((item.duration / totalSpan) * 100, 3);
+                let colorClass = 'bg-brand-500';
+                if (item.type === 'ACADEMY') colorClass = 'bg-accent-purple';
+                if (item.type === 'BREAK') colorClass = 'bg-gray-400 dark:bg-zinc-600';
+
+                return `<div style="width: ${percent}%" class="${colorClass} h-full border-r border-black/20" title="${item.title} (${item.duration}분)"></div>`;
+            }).join('');
+
+            detailList.innerHTML = timelineItems.map(item => {
+                let dotColor = 'bg-brand-500';
+                let textColor = 'text-brand-600 dark:text-brand-400';
+
+                if (item.type === 'ACADEMY') {
+                    dotColor = 'bg-accent-purple';
+                    textColor = 'text-accent-purple';
+                } else if (item.type === 'BREAK') {
+                    dotColor = 'bg-gray-400 dark:bg-zinc-600';
+                    textColor = 'text-gray-500 dark:text-zinc-500';
+                }
+
+                return `
+                    <div class="relative">
+                        <div class="absolute -left-[27px] top-1.5 w-3 h-3 rounded-full ${dotColor} border-2 border-white dark:border-zinc-950"></div>
+                        <div class="text-xs font-bold ${textColor}">${item.start} ~ ${item.end} (${item.duration}분)</div>
+                        <div class="text-sm font-extrabold text-gray-900 dark:text-white mt-0.5">${item.title}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function setPomodoroTask(title, minutes) {
+            document.getElementById('timer-task-title').innerText = title;
+            pomodoroSeconds = minutes * 60;
+            updatePomodoroDisplay();
+            showModal('타이머 설정 완료', `'${title}' 숙제가 타이머에 등록되었습니다 (${minutes}분).`);
+        }
+
+        function updatePomodoroDisplay() {
+            const m = Math.floor(pomodoroSeconds / 60);
+            const s = pomodoroSeconds % 60;
+            document.getElementById('pomo-display').innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function startPomodoro() {
+            if (isPomodoroRunning) return;
+            isPomodoroRunning = true;
+
+            document.getElementById('btn-pomo-start').classList.add('hidden');
+            document.getElementById('btn-pomo-pause').classList.remove('hidden');
+            document.getElementById('timer-status-badge').innerText = '집중 중 🔥';
+            document.getElementById('timer-status-badge').className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-brand-500/20 text-brand-600 dark:text-brand-400';
+
+            pomodoroTimer = setInterval(() => {
+                if (pomodoroSeconds > 0) {
+                    pomodoroSeconds--;
+                    updatePomodoroDisplay();
+                } else {
+                    pausePomodoro();
+                    confetti({ particleCount: 100, spread: 80, origin: { y: 0.5 } });
+                    showModal('집중 세션 완료! 🎉', '수고하셨습니다! 잠시 휴식을 취하세요.');
+                }
+            }, 1000);
+        }
+
+        function pausePomodoro() {
+            isPomodoroRunning = false;
+            clearInterval(pomodoroTimer);
+            document.getElementById('btn-pomo-start').classList.remove('hidden');
+            document.getElementById('btn-pomo-pause').classList.add('hidden');
+            document.getElementById('timer-status-badge').innerText = '일시 정지';
+            document.getElementById('timer-status-badge').className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400';
+        }
+
+        function resetPomodoro() {
+            pausePomodoro();
+            pomodoroSeconds = 25 * 60;
+            updatePomodoroDisplay();
+            document.getElementById('timer-status-badge').innerText = '대기 중';
+            document.getElementById('timer-status-badge').className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400';
+        }
+
+        function showModal(title, message) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            document.getElementById('app-modal').classList.remove('hidden');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function closeModal() {
+            document.getElementById('app-modal').classList.add('hidden');
+        }
+
+        function resetAllData() {
+            localStorage.removeItem('sukssuk_app_data');
+            appState.homeworks = [];
+            appState.academies = [];
+            renderAcademies();
+            renderHomeworks();
+            switchStep(1);
+        }
+
+        function saveLocalStorage() {
+            try {
+                localStorage.setItem('sukssuk_app_data', JSON.stringify(appState));
+            } catch (e) {}
+        }
+
+        function loadLocalStorage() {
+            try {
+                const data = localStorage.getItem('sukssuk_app_data');
+                if (data) {
+                    appState = { ...appState, ...JSON.parse(data) };
+                }
+            } catch (e) {}
+        }
+    </script>
+</body>
+</html>
+```
+
+요청하신 '숙 쓱' AI 우선순위 플래너 웹 애플리케이션의 전체 HTML 코드가 전달되었습니다! 혹시 추가하고 싶으신 기능이나 수정 사항이 있다면 언제든 말씀해 주세요.
