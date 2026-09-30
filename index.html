@@ -1,9 +1,611 @@
 <!DOCTYPE html>
-<html lang="ko" class="dark">
-<head>
+<html lang="ko" class="dark"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIxNTkxNjcwNjk3MDUzMjY5MjAxMCIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzRkNTNjZWEyZDJjOTJhM2ZfaW5kZXguaHRtbC04NzkifSwiZXhwIjoxNzkwNzcxODk0LCJpYXQiOjE3OTA3NjgyOTQsImFsZyI6IlJTMjU2In0.SbfDEr0kFpfBk0VzPbkWpelDyW-0MbiElMdF_k_F0HDZ6ZpvvFzCW_BjjcMGEXPw3JBWtrYHbx6Stov8KMxKmBCfJiCGhbUc1y1mzQumkJh6R_32AXkRkWm-F_VtapN1ewslIKO5ItpxRBIeMe8e30alsfaCiJeuAYmzs6bHykuMJkVn-Kyw-UpUn47qyi_n1Mm13q3mE7PHGQadWc4gvI5TAJMnozPIeinT6vG1pItYoZrARytzJfqtGSzYpwHpuCGwhzTQHDlsbY59dG2zKha3NSYCSygzDfGNjEvMPPjo0Gx-HgppUdKo5whyaBly9lMDlCDPvW_pqa-rs7ck-w","c_4d53cea2d2c92a3f_index.html-879")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.j=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.i="";var l=0,t=null,r=null,q=[],F=new TextEncoder,G=new TextDecoder;
+c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*16|0;return(f===
+"x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;(g=t)==null||g.postMessage(a)}};
+Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>숙 쓱 (숙제 쓱- 끝) - AI 숙제 우선순위 & 타임라인 플래너</title>
+    <title>숙 쓱 (Suk Ssuk) - 중3 맞춤 AI 숙제 플래너 PPT</title>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,18 +618,14 @@
                         sans: ['Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'Roboto', 'sans-serif'],
                     },
                     colors: {
-                        brand: {
-                            50: '#f0fdf4',
-                            100: '#dcfce7',
-                            400: '#4ade80',
-                            500: '#22c55e',
-                            600: '#16a34a',
-                        },
-                        accent: {
-                            purple: '#8b5cf6',
-                            neon: '#00f2fe',
-                            amber: '#f59e0b',
-                            rose: '#f43f5e'
+                        cyber: {
+                            bg: '#0A0A0C',
+                            card: '#12131C',
+                            border: '#232538',
+                            cyan: '#00F2FE',
+                            purple: '#A855F7',
+                            pink: '#EC4899',
+                            yellow: '#FACC15',
                         }
                     }
                 }
@@ -37,37 +635,68 @@
 
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Canvas-Confetti for Celebration Effect -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- Pretendard WebFont -->
-    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" crossorigin="anonymous"></script>
 
     <style>
         body {
-            font-family: 'Pretendard', sans-serif;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #050508;
+            color: #F3F4F6;
+            overflow-x: hidden;
+            user-select: none;
         }
 
-        /* Glassmorphism Styling */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.88);
-            backdrop-filter: blur(14px);
-            border: 1px solid rgba(229, 231, 235, 0.8);
-        }
-        .dark .glass-card {
-            background: rgba(24, 24, 27, 0.88);
-            backdrop-filter: blur(14px);
-            border: 1px solid rgba(63, 63, 70, 0.6);
+        /* 16:9 Aspect Ratio PPT Slide Frame Container */
+        .ppt-wrapper {
+            width: 100%;
+            max-width: 1100px;
+            aspect-ratio: 16 / 9;
+            margin: 0 auto;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0, 242, 254, 0.15), 0 0 30px rgba(168, 85, 247, 0.15);
+            background: linear-gradient(145deg, rgba(18, 19, 28, 0.98), rgba(10, 10, 12, 0.99));
+            backdrop-filter: blur(16px);
         }
 
-        /* Glow Accents */
-        .neon-glow {
-            box-shadow: 0 0 25px rgba(34, 197, 94, 0.25);
+        @media (max-height: 780px) or (max-width: 768px) {
+            .ppt-wrapper {
+                aspect-ratio: auto;
+                min-height: 82vh;
+            }
         }
-        .dark .neon-glow {
-            box-shadow: 0 0 30px rgba(34, 197, 94, 0.35);
+
+        /* Slide Horizontal Slider Tracks */
+        .slider-track {
+            display: flex;
+            width: 500%;
+            height: 100%;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .slide {
+            width: 20%;
+            height: 100%;
+            flex-shrink: 0;
+            overflow-y: auto;
+            padding: 2rem 2.5rem;
+            box-sizing: border-box;
+        }
+
+        /* Custom Neon Styling */
+        .neon-cyan-glow {
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.25);
+        }
+        .neon-purple-glow {
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+        }
+        .text-neon-cyan {
+            color: #00F2FE;
+            text-shadow: 0 0 8px rgba(0, 242, 254, 0.5);
+        }
+        .text-neon-yellow {
+            color: #FACC15;
+            text-shadow: 0 0 8px rgba(250, 204, 21, 0.5);
         }
 
         /* Custom Scrollbar */
@@ -76,513 +705,461 @@
             height: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: transparent;
+            background: #0A0A0C;
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(156, 163, 175, 0.4);
-            border-radius: 9999px;
+            background: #3B3E5B;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00F2FE;
         }
 
         .touch-active:active {
-            transform: scale(0.98);
-        }
-
-        /* Print Style */
-        @media print {
-            header, footer, .no-print {
-                display: none !important;
-            }
-            body {
-                background: white !important;
-                color: black !important;
-            }
-            .glass-card {
-                border: 1px solid #ccc !important;
-                box-shadow: none !important;
-                background: white !important;
-            }
+            transform: scale(0.97);
         }
     </style>
-</head>
-<body class="bg-gray-50 text-gray-900 dark:bg-zinc-950 dark:text-zinc-100 min-h-screen flex flex-col justify-between selection:bg-brand-500 selection:text-white">
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.relative{position:relative}.bottom-5{bottom:1.25rem}.right-5{right:1.25rem}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-5{margin-bottom:1.25rem}.mr-1\.5{margin-right:0.375rem}.mr-2{margin-right:0.5rem}.mt-1{margin-top:0.25rem}.ml-2{margin-left:0.5rem}.block{display:block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-full{height:100%}.max-h-\[150px\]{max-height:150px}.max-h-\[170px\]{max-height:170px}.max-h-\[280px\]{max-height:280px}.min-h-screen{min-height:100vh}.w-10{width:2.5rem}.w-full{width:100%}.max-w-\[1100px\]{max-width:1100px}.shrink-0{flex-shrink:0}.cursor-pointer{cursor:pointer}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-y-1{row-gap:0.25rem}.space-x-1 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.25rem * var(--tw-space-x-reverse));margin-left:calc(0.25rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-2 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.5rem * var(--tw-space-x-reverse));margin-left:calc(0.5rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-3 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.75rem * var(--tw-space-x-reverse));margin-left:calc(0.75rem * calc(1 - var(--tw-space-x-reverse)))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-\[10px\]{border-radius:10px}.rounded-full{border-radius:9999px}.rounded-xl{border-radius:0.75rem}.rounded-lg{border-radius:0.5rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-cyber-border{--tw-border-opacity:1;border-color:rgb(35 37 56 / var(--tw-border-opacity, 1))}.border-cyber-cyan\/40{border-color:rgb(0 242 254 / 0.4)}.border-cyber-cyan\/50{border-color:rgb(0 242 254 / 0.5)}.border-cyber-pink\/40{border-color:rgb(236 72 153 / 0.4)}.border-cyber-purple\/40{border-color:rgb(168 85 247 / 0.4)}.border-zinc-700{--tw-border-opacity:1;border-color:rgb(63 63 70 / var(--tw-border-opacity, 1))}.border-zinc-800{--tw-border-opacity:1;border-color:rgb(39 39 42 / var(--tw-border-opacity, 1))}.border-zinc-800\/80{border-color:rgb(39 39 42 / 0.8)}.bg-cyber-bg{--tw-bg-opacity:1;background-color:rgb(10 10 12 / var(--tw-bg-opacity, 1))}.bg-cyber-card{--tw-bg-opacity:1;background-color:rgb(18 19 28 / var(--tw-bg-opacity, 1))}.bg-cyber-cyan\/20{background-color:rgb(0 242 254 / 0.2)}.bg-cyber-pink\/20{background-color:rgb(236 72 153 / 0.2)}.bg-cyber-purple\/20{background-color:rgb(168 85 247 / 0.2)}.bg-zinc-800{--tw-bg-opacity:1;background-color:rgb(39 39 42 / var(--tw-bg-opacity, 1))}.bg-cyber-cyan{--tw-bg-opacity:1;background-color:rgb(0 242 254 / var(--tw-bg-opacity, 1))}.bg-cyber-pink{--tw-bg-opacity:1;background-color:rgb(236 72 153 / var(--tw-bg-opacity, 1))}.bg-cyber-purple{--tw-bg-opacity:1;background-color:rgb(168 85 247 / var(--tw-bg-opacity, 1))}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-cyber-cyan{--tw-gradient-from:#00F2FE var(--tw-gradient-from-position);--tw-gradient-to:rgb(0 242 254 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-cyber-pink{--tw-gradient-from:#EC4899 var(--tw-gradient-from-position);--tw-gradient-to:rgb(236 72 153 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.via-cyber-purple{--tw-gradient-to:rgb(168 85 247 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #A855F7 var(--tw-gradient-via-position), var(--tw-gradient-to)}.to-cyber-pink{--tw-gradient-to:#EC4899 var(--tw-gradient-to-position)}.to-cyber-purple{--tw-gradient-to:#A855F7 var(--tw-gradient-to-position)}.p-2{padding:0.5rem}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-\[2px\]{padding:2px}.p-2\.5{padding:0.625rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.px-7{padding-left:1.75rem;padding-right:1.75rem}.px-8{padding-left:2rem;padding-right:2rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.px-1{padding-left:0.25rem;padding-right:0.25rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.pb-3{padding-bottom:0.75rem}.pr-1{padding-right:0.25rem}.pt-2{padding-top:0.5rem}.pt-3{padding-top:0.75rem}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.uppercase{text-transform:uppercase}.tracking-tight{letter-spacing:-0.025em}.tracking-wider{letter-spacing:0.05em}.text-black{--tw-text-opacity:1;color:rgb(0 0 0 / var(--tw-text-opacity, 1))}.text-cyber-cyan{--tw-text-opacity:1;color:rgb(0 242 254 / var(--tw-text-opacity, 1))}.text-cyber-pink{--tw-text-opacity:1;color:rgb(236 72 153 / var(--tw-text-opacity, 1))}.text-cyber-purple{--tw-text-opacity:1;color:rgb(168 85 247 / var(--tw-text-opacity, 1))}.text-cyber-yellow{--tw-text-opacity:1;color:rgb(250 204 21 / var(--tw-text-opacity, 1))}.text-slate-100{--tw-text-opacity:1;color:rgb(241 245 249 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-zinc-300{--tw-text-opacity:1;color:rgb(212 212 216 / var(--tw-text-opacity, 1))}.text-zinc-400{--tw-text-opacity:1;color:rgb(161 161 170 / var(--tw-text-opacity, 1))}.text-zinc-500{--tw-text-opacity:1;color:rgb(113 113 122 / var(--tw-text-opacity, 1))}.accent-cyan-400{accent-color:#22d3ee}.opacity-0{opacity:0}.opacity-100{opacity:1}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-cyan-500\/10{--tw-shadow-color:rgb(6 182 212 / 0.1);--tw-shadow:var(--tw-shadow-colored)}.shadow-cyan-500\/20{--tw-shadow-color:rgb(6 182 212 / 0.2);--tw-shadow:var(--tw-shadow-colored)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-300{transition-duration:300ms}.hover\:border-cyber-cyan:hover{--tw-border-opacity:1;border-color:rgb(0 242 254 / var(--tw-border-opacity, 1))}.hover\:bg-zinc-700:hover{--tw-bg-opacity:1;background-color:rgb(63 63 70 / var(--tw-bg-opacity, 1))}.hover\:bg-zinc-800:hover{--tw-bg-opacity:1;background-color:rgb(39 39 42 / var(--tw-bg-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:text-rose-500:hover{--tw-text-opacity:1;color:rgb(244 63 94 / var(--tw-text-opacity, 1))}.hover\:opacity-90:hover{opacity:0.9}.hover\:brightness-110:hover{--tw-brightness:brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.focus\:border-cyber-cyan:focus{--tw-border-opacity:1;border-color:rgb(0 242 254 / var(--tw-border-opacity, 1))}.focus\:border-cyber-pink:focus{--tw-border-opacity:1;border-color:rgb(236 72 153 / var(--tw-border-opacity, 1))}.focus\:border-cyber-yellow:focus{--tw-border-opacity:1;border-color:rgb(250 204 21 / var(--tw-border-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}@media (min-width: 640px){.sm\:col-span-3{grid-column:span 3 / span 3}.sm\:col-span-4{grid-column:span 4 / span 4}.sm\:col-span-5{grid-column:span 5 / span 5}.sm\:inline{display:inline}.sm\:grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.sm\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.sm\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.sm\:space-x-2 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.5rem * var(--tw-space-x-reverse));margin-left:calc(0.5rem * calc(1 - var(--tw-space-x-reverse)))}.sm\:p-5{padding:1.25rem}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}}</style></head>
+<body class="min-h-screen flex flex-col justify-between p-3 sm:p-5 text-slate-100">
 
-    <header class="sticky top-0 z-40 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-gray-200 dark:border-zinc-800 transition-colors">
-        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchStep(1)">
-                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-500 to-accent-neon flex items-center justify-center text-white shadow-lg shadow-brand-500/20 font-black text-xl tracking-tighter">
+    <header class="max-w-[1100px] w-full mx-auto flex items-center justify-between pb-3 border-b border-zinc-800/80 mb-3 gap-2 flex-wrap">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyber-cyan via-cyber-purple to-cyber-pink p-[2px] shadow-lg shadow-cyan-500/20">
+                <div class="w-full h-full bg-cyber-bg rounded-[10px] flex items-center justify-center font-black text-lg text-cyber-cyan">
                     쓱
                 </div>
-                <div>
-                    <div class="flex items-center space-x-2">
-                        <h1 class="text-xl font-black tracking-tight text-gray-900 dark:text-white">숙 쓱</h1>
-                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-100 dark:bg-brand-500/20 text-brand-600 dark:text-brand-400 border border-brand-500/30">AI 우선순위 플래너</span>
-                    </div>
-                    <p class="text-xs text-gray-500 dark:text-zinc-400">숙제 쓱- 끝내는 초간단 스마트 플래너</p>
-                </div>
             </div>
+            <div>
+                <h1 class="text-xl font-black tracking-tight text-white flex items-center space-x-2">
+                    <span>숙 쓱</span>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-cyber-cyan to-cyber-purple text-black font-extrabold uppercase">중3 맞춤 AI</span>
+                </h1>
+                <p class="text-[11px] text-zinc-400">타임어택 AI 숙제 우선순위 PPT 플래너</p>
+            </div>
+        </div>
 
-            <div class="flex items-center space-x-2 no-print">
-                <button type="button" onclick="toggleTheme()" class="p-2.5 rounded-xl border border-gray-200 dark:border-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-600 dark:text-zinc-300 transition-all touch-active" aria-label="다크모드 토글">
-                    <i class="fa-solid fa-sun hidden dark:block text-amber-400"></i>
-                    <i class="fa-solid fa-moon block dark:hidden text-zinc-700"></i>
+        <!-- Slide Step Progress Bar Navigation & Copy HTML Button -->
+        <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+            <div class="flex items-center space-x-1 sm:space-x-2">
+                <button onclick="goToSlide(0)" id="nav-btn-0" class="slide-nav-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-gradient-to-r from-cyber-cyan to-cyber-purple text-black font-extrabold">
+                    1. 학원 스케줄
+                </button>
+                <button onclick="goToSlide(1)" id="nav-btn-1" class="slide-nav-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all text-zinc-400 hover:text-white">
+                    2. 해야할 숙제
+                </button>
+                <button onclick="goToSlide(2)" id="nav-btn-2" class="slide-nav-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all text-zinc-400 hover:text-white">
+                    3. 위험도 지정
+                </button>
+                <button onclick="goToSlide(3)" id="nav-btn-3" class="slide-nav-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all text-zinc-400 hover:text-white">
+                    4. 내 스타일
+                </button>
+                <button onclick="goToSlide(4)" id="nav-btn-4" class="slide-nav-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all text-zinc-400 hover:text-white">
+                    <i class="fa-solid fa-bolt text-cyber-yellow"></i>
+                    <span>5. AI 타임어택</span>
                 </button>
             </div>
+
+            <!-- HTML Copy Button -->
+            <button onclick="copyEntireHTMLCode()" class="px-3 py-1.5 bg-gradient-to-r from-cyber-pink to-cyber-purple text-white font-black text-xs rounded-xl shadow-lg hover:brightness-110 transition-all flex items-center space-x-1 touch-active">
+                <i class="fa-solid fa-code"></i>
+                <span>HTML 전체 복사 📋</span>
+            </button>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-3 sm:px-6 py-6 flex-grow w-full">
+    <main class="ppt-wrapper border border-cyber-border rounded-3xl overflow-hidden relative">
 
-        <!-- Stepper Navigation -->
-        <nav class="mb-8 bg-white dark:bg-zinc-900 p-3 sm:p-4 rounded-3xl border border-gray-200 dark:border-zinc-800 shadow-sm no-print">
-            <div class="grid grid-cols-5 gap-1 text-center font-bold">
-                
-                <button type="button" onclick="switchStep(1)" id="step-nav-1" class="step-nav flex flex-col items-center p-2 rounded-2xl transition-all touch-active">
-                    <span id="step-num-1" class="w-8 h-8 rounded-xl bg-brand-500 text-white flex items-center justify-center text-xs font-black mb-1 shadow-md">1</span>
-                    <span class="text-[11px] sm:text-xs text-gray-700 dark:text-zinc-300">오늘 일정</span>
-                </button>
+        <div id="slider-track" class="slider-track" style="transform: translateX(0%);">
 
-                <button type="button" onclick="switchStep(2)" id="step-nav-2" class="step-nav flex flex-col items-center p-2 rounded-2xl transition-all touch-active opacity-40">
-                    <span id="step-num-2" class="w-8 h-8 rounded-xl bg-gray-200 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 flex items-center justify-center text-xs font-black mb-1">2</span>
-                    <span class="text-[11px] sm:text-xs text-gray-500 dark:text-zinc-500">숙제 작성</span>
-                </button>
-
-                <button type="button" onclick="switchStep(3)" id="step-nav-3" class="step-nav flex flex-col items-center p-2 rounded-2xl transition-all touch-active opacity-40">
-                    <span id="step-num-3" class="w-8 h-8 rounded-xl bg-gray-200 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 flex items-center justify-center text-xs font-black mb-1">3</span>
-                    <span class="text-[11px] sm:text-xs text-gray-500 dark:text-zinc-500">중요/처벌</span>
-                </button>
-
-                <button type="button" onclick="switchStep(4)" id="step-nav-4" class="step-nav flex flex-col items-center p-2 rounded-2xl transition-all touch-active opacity-40">
-                    <span id="step-num-4" class="w-8 h-8 rounded-xl bg-gray-200 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 flex items-center justify-center text-xs font-black mb-1">4</span>
-                    <span class="text-[11px] sm:text-xs text-gray-500 dark:text-zinc-500">내 스타일</span>
-                </button>
-
-                <button type="button" onclick="switchStep(5)" id="step-nav-5" class="step-nav flex flex-col items-center p-2 rounded-2xl transition-all touch-active opacity-40">
-                    <span id="step-num-5" class="w-8 h-8 rounded-xl bg-gray-200 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 flex items-center justify-center text-xs font-black mb-1">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    </span>
-                    <span class="text-[11px] sm:text-xs text-gray-500 dark:text-zinc-500">AI 결과</span>
-                </button>
-
-            </div>
-        </nav>
-
-        <!-- STEP 1: Today's Academy Schedule -->
-        <section id="step-section-1" class="step-section space-y-6">
-            <div class="glass-card rounded-3xl p-5 sm:p-8 shadow-xl">
-                <div class="flex items-center space-x-3 mb-6">
-                    <div class="p-3 bg-brand-500/10 text-brand-500 rounded-2xl border border-brand-500/20">
-                        <i class="fa-solid fa-calendar-days text-xl"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">STEP 1. 오늘 학원 및 전체 일정</h2>
-                        <p class="text-xs sm:text-sm text-gray-500 dark:text-zinc-400 mt-1">오늘 숙제를 시작할 시각, 학원 수업 시간, 목표 취침 시각을 입력해 주세요.</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                    <div class="p-4 rounded-2xl bg-gray-100/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800">
-                        <label class="block text-xs font-bold text-gray-700 dark:text-zinc-300 mb-2 flex items-center">
-                            <i class="fa-solid fa-play text-brand-500 mr-2"></i> 오늘 숙제 시작 시각
-                        </label>
-                        <input type="time" id="start-time" value="16:00" class="w-full rounded-xl px-4 py-3 font-bold text-base bg-white dark:bg-zinc-950 border border-gray-300 dark:border-zinc-700">
+            <section class="slide flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between border-b border-zinc-800 pb-3 mb-5">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-xs font-extrabold px-3 py-1 bg-cyber-purple/20 text-cyber-purple border border-cyber-purple/40 rounded-full">SLIDE 01</span>
+                            <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">🏫 오늘 다녀오는 학원 일정을 적어주세요</h2>
+                        </div>
+                        <i class="fa-solid fa-clock text-cyber-cyan text-2xl"></i>
                     </div>
 
-                    <div class="p-4 rounded-2xl bg-gray-100/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800">
-                        <label class="block text-xs font-bold text-gray-700 dark:text-zinc-300 mb-2 flex items-center">
-                            <i class="fa-solid fa-bed text-brand-500 mr-2"></i> 목표 취침 시각
-                        </label>
-                        <input type="time" id="sleep-time" value="23:30" class="w-full rounded-xl px-4 py-3 font-bold text-base bg-white dark:bg-zinc-950 border border-gray-300 dark:border-zinc-700">
-                    </div>
-                </div>
+                    <p class="text-xs text-zinc-400 mb-5">숙제를 할 수 있는 순수 자유 시간을 정확히 계산하기 위해 공부 시작 시간과 학원 시간표를 설정합니다.</p>
 
-                <div class="p-4 sm:p-5 rounded-2xl bg-gray-100/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800 mb-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <label class="text-xs font-bold text-gray-700 dark:text-zinc-300 flex items-center">
-                            <i class="fa-solid fa-school text-brand-500 mr-2"></i> 오늘 가야 하는 학원 / 수업 일정
-                        </label>
-                        <button type="button" onclick="addAcademyItem()" class="px-3 py-2 bg-brand-500/10 hover:bg-brand-500/20 text-brand-600 dark:text-brand-400 border border-brand-500/30 font-bold rounded-xl text-xs flex items-center space-x-1 transition-all touch-active">
-                            <i class="fa-solid fa-plus mr-1"></i>
-                            <span>학원 추가</span>
-                        </button>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                        <div class="p-4 bg-cyber-card border border-cyber-border rounded-2xl">
+                            <label class="block text-xs font-extrabold text-cyber-cyan mb-2">
+                                <i class="fa-solid fa-play mr-1.5"></i> 오늘 공부 시작 시각
+                            </label>
+                            <input type="time" id="start-time" value="16:00" class="w-full px-4 py-2.5 bg-cyber-bg border border-zinc-700 rounded-xl text-base font-bold text-white focus:border-cyber-cyan focus:outline-none">
+                        </div>
+
+                        <div class="p-4 bg-cyber-card border border-cyber-border rounded-2xl">
+                            <label class="block text-xs font-extrabold text-cyber-pink mb-2">
+                                <i class="fa-solid fa-bed mr-1.5"></i> 목표 취침 시각
+                            </label>
+                            <input type="time" id="sleep-time" value="23:30" class="w-full px-4 py-2.5 bg-cyber-bg border border-zinc-700 rounded-xl text-base font-bold text-white focus:border-cyber-pink focus:outline-none">
+                        </div>
                     </div>
 
-                    <div id="academy-list" class="space-y-3">
-                        <!-- Dynamic Academy Schedule List -->
+                    <div class="p-4 bg-cyber-card border border-cyber-border rounded-2xl">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="text-xs font-extrabold text-white flex items-center">
+                                <i class="fa-solid fa-building-columns text-cyber-yellow mr-2"></i> 학원 라이딩 / 수업 시간표
+                            </label>
+                            <button type="button" onclick="addAcademyItem()" class="px-3 py-1.5 bg-gradient-to-r from-cyber-cyan to-cyber-purple text-black font-extrabold text-xs rounded-xl shadow-md hover:opacity-90 transition-all">
+                                + 학원 추가
+                            </button>
+                        </div>
+                        <div id="academy-list" class="space-y-2 max-h-[150px] overflow-y-auto pr-1">
+                <div class="p-2.5 bg-cyber-bg border border-cyber-border rounded-xl flex items-center justify-between gap-2">
+                    <span class="text-xs font-bold text-white shrink-0">수학 학원</span>
+                    <div class="flex items-center space-x-1 text-[11px] text-cyber-cyan font-mono">
+                        <span>17:00 ~ 19:00</span>
                     </div>
-                </div>
-
-                <div class="flex justify-end pt-2">
-                    <button type="button" onclick="switchStep(2)" class="w-full sm:w-auto px-7 py-4 bg-brand-500 hover:bg-brand-600 text-white font-extrabold rounded-2xl shadow-lg shadow-brand-500/25 flex items-center justify-center space-x-2 transition-all touch-active">
-                        <span>다음: 숙제 등록하기</span>
-                        <i class="fa-solid fa-arrow-right"></i>
+                    <button onclick="removeAcademy(1)" class="text-zinc-500 hover:text-rose-500 text-xs px-1">
+                        <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
             </div>
-        </section>
-
-        <!-- STEP 2: Homework List & Duration -->
-        <section id="step-section-2" class="step-section space-y-6 hidden">
-            <div class="glass-card rounded-3xl p-5 sm:p-8 shadow-xl">
-                <div class="flex items-center space-x-3 mb-6">
-                    <div class="p-3 bg-brand-500/10 text-brand-500 rounded-2xl border border-brand-500/20">
-                        <i class="fa-solid fa-book-open text-xl"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">STEP 2. 숙제 입력 및 걸리는 시간</h2>
-                        <p class="text-xs sm:text-sm text-gray-500 dark:text-zinc-400 mt-1">오늘 해야 하는 과목/학원별 숙제와 예상 시간을 입력해 주세요.</p>
                     </div>
                 </div>
 
-                <!-- Quick Presets -->
-                <div class="p-4 rounded-2xl bg-gray-100/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800 mb-6">
-                    <span class="text-xs font-bold text-gray-700 dark:text-zinc-300 mb-2.5 block flex items-center">
-                        <i class="fa-solid fa-bolt text-brand-500 mr-2"></i> 원클릭 숙제 빠르게 추가:
-                    </span>
-                    <div class="flex flex-wrap gap-2">
-                        <button type="button" onclick="addPresetHomework('수학 문제집 3장 풀어오기', '수학', 40)" class="px-3 py-2 rounded-xl text-xs bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 hover:border-brand-500 text-gray-800 dark:text-zinc-200 transition-all touch-active">
-                            ➕ 수학 문제집 (40분)
-                        </button>
-                        <button type="button" onclick="addPresetHomework('영어 단어 50개 암기', '영어', 25)" class="px-3 py-2 rounded-xl text-xs bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 hover:border-brand-500 text-gray-800 dark:text-zinc-200 transition-all touch-active">
-                            ➕ 영어 단어 (25분)
-                        </button>
-                        <button type="button" onclick="addPresetHomework('국어 독서록 작성', '국어', 30)" class="px-3 py-2 rounded-xl text-xs bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 hover:border-brand-500 text-gray-800 dark:text-zinc-200 transition-all touch-active">
-                            ➕ 국어 독서록 (30분)
-                        </button>
-                        <button type="button" onclick="addPresetHomework('과학 탐구 프린트 작성', '과학', 20)" class="px-3 py-2 rounded-xl text-xs bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 hover:border-brand-500 text-gray-800 dark:text-zinc-200 transition-all touch-active">
-                            ➕ 과학 프린트 (20분)
-                        </button>
-                    </div>
+                <div class="flex justify-end pt-3">
+                    <button onclick="nextSlide()" class="px-7 py-3 bg-gradient-to-r from-cyber-cyan to-cyber-purple text-black font-black rounded-2xl shadow-lg transition-all flex items-center space-x-2 touch-active">
+                        <span>다음 (숙제 목록)</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
                 </div>
+            </section>
 
-                <!-- Input Form -->
-                <div class="p-4 sm:p-5 rounded-2xl bg-gray-100/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800 mb-6">
-                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-3">
-                        <div class="sm:col-span-5">
-                            <label class="block text-xs font-bold text-gray-700 dark:text-zinc-300 mb-1">숙제 이름 / 내용</label>
-                            <input type="text" id="hw-input-name" placeholder="예: 수학 워크북 12~15페이지" class="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-zinc-950 border border-gray-300 dark:border-zinc-700 text-sm">
+            <section class="slide flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between border-b border-zinc-800 pb-3 mb-5">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-xs font-extrabold px-3 py-1 bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/40 rounded-full">SLIDE 02</span>
+                            <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">📚 오늘 제출/해치워야 할 숙제 목록</h2>
                         </div>
-                        <div class="sm:col-span-4">
-                            <label class="block text-xs font-bold text-gray-700 dark:text-zinc-300 mb-1">과목 또는 학원명</label>
-                            <select id="hw-input-subject" class="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-zinc-950 border border-gray-300 dark:border-zinc-700 text-sm">
+                        <i class="fa-solid fa-book-open text-cyber-pink text-2xl"></i>
+                    </div>
+
+                    <!-- Presets -->
+                    <div class="mb-4">
+                        <span class="text-xs font-extrabold text-zinc-400 mb-2 block">🔥 중3 자주 하는 숙제 빠른 추가:</span>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="addPresetHomework('수학 쎈 C단계 3페이지', '수학', 45)" class="px-3 py-1.5 bg-cyber-card hover:border-cyber-cyan border border-cyber-border text-xs text-white font-bold rounded-xl transition-all">
+                                ➕ 수학 쎈 (45분)
+                            </button>
+                            <button onclick="addPresetHomework('영어 보카 80단어 완벽 암기', '영어', 30)" class="px-3 py-1.5 bg-cyber-card hover:border-cyber-cyan border border-cyber-border text-xs text-white font-bold rounded-xl transition-all">
+                                ➕ 영어 단어 (30분)
+                            </button>
+                            <button onclick="addPresetHomework('과학 기출문제 15문항 풀이', '과학', 35)" class="px-3 py-1.5 bg-cyber-card hover:border-cyber-cyan border border-cyber-border text-xs text-white font-bold rounded-xl transition-all">
+                                ➕ 과학 기출 (35분)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Add Form -->
+                    <div class="p-4 bg-cyber-card border border-cyber-border rounded-2xl mb-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-3">
+                            <input type="text" id="hw-input-name" placeholder="숙제 이름 (예: 영어 오답노트)" class="sm:col-span-5 px-3 py-2 bg-cyber-bg border border-zinc-700 rounded-xl text-xs text-white focus:border-cyber-cyan focus:outline-none">
+                            <select id="hw-input-subject" class="sm:col-span-4 px-3 py-2 bg-cyber-bg border border-zinc-700 rounded-xl text-xs text-white focus:border-cyber-cyan focus:outline-none">
                                 <option value="수학">수학</option>
                                 <option value="영어">영어</option>
                                 <option value="국어">국어</option>
                                 <option value="과학">과학</option>
                                 <option value="사회/역사">사회/역사</option>
-                                <option value="학교/기타">학교/기타</option>
                             </select>
+                            <input type="number" id="hw-input-duration" value="30" step="5" min="5" placeholder="분" class="sm:col-span-3 px-3 py-2 bg-cyber-bg border border-zinc-700 rounded-xl text-xs text-white focus:border-cyber-cyan focus:outline-none">
                         </div>
-                        <div class="sm:col-span-3">
-                            <label class="block text-xs font-bold text-gray-700 dark:text-zinc-300 mb-1">예상 소요시간(분)</label>
-                            <input type="number" id="hw-input-duration" min="5" value="30" step="5" class="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-zinc-950 border border-gray-300 dark:border-zinc-700 text-sm">
-                        </div>
+                        <button onclick="addHomeworkItem()" class="w-full py-2.5 bg-gradient-to-r from-cyber-cyan via-cyber-purple to-cyber-pink text-black font-black text-xs rounded-xl hover:opacity-90 transition-all">
+                            + 숙제 목록에 등록
+                        </button>
                     </div>
-                    <button type="button" onclick="addHomeworkItem()" class="w-full py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center space-x-1 shadow-md touch-active">
-                        <i class="fa-solid fa-plus mr-1"></i>
-                        <span>목록에 추가하기</span>
-                    </button>
-                </div>
 
-                <!-- Homework List -->
-                <div id="homework-list" class="space-y-3 min-h-[120px]">
-                    <!-- Dynamic Items -->
-                </div>
-
-                <div class="flex flex-col sm:flex-row justify-between gap-3 pt-6">
-                    <button type="button" onclick="switchStep(1)" class="px-5 py-3.5 border border-gray-300 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-zinc-300 font-bold rounded-2xl text-xs transition-colors flex items-center justify-center space-x-1.5 touch-active order-2 sm:order-1">
-                        <i class="fa-solid fa-arrow-left"></i>
-                        <span>이전 단계</span>
-                    </button>
-                    <button type="button" onclick="switchStep(3)" class="px-7 py-4 bg-brand-500 hover:bg-brand-600 text-white font-extrabold rounded-2xl shadow-lg shadow-brand-500/25 flex items-center justify-center space-x-2 transition-all touch-active order-1 sm:order-2">
-                        <span>다음: 중요도 & 처벌 선택</span>
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- STEP 3: Homework Importance & Punishment Level -->
-        <section id="step-section-3" class="step-section space-y-6 hidden">
-            <div class="glass-card rounded-3xl p-5 sm:p-8 shadow-xl">
-                <div class="flex items-center space-x-3 mb-6">
-                    <div class="p-3 bg-brand-500/10 text-brand-500 rounded-2xl border border-brand-500/20">
-                        <i class="fa-solid fa-triangle-exclamation text-xl"></i>
-                    </div>
+                    <div id="homework-list" class="space-y-2 max-h-[150px] overflow-y-auto pr-1">
+                <div class="p-2.5 bg-cyber-bg border border-cyber-border rounded-xl flex items-center justify-between gap-2">
                     <div>
-                        <h2 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">STEP 3. 숙제별 중요도 및 처벌 경중</h2>
-                        <p class="text-xs sm:text-sm text-gray-500 dark:text-zinc-400 mt-1">숙제를 안 했을 때의 불이익(남기, 처벌, 벌점, 부모님 호출)의 위험도를 지정하세요.</p>
+                        <span class="text-xs font-bold text-white">수학 쎈 C단계 3페이지</span>
+                        <span class="text-[10px] text-cyber-cyan font-extrabold ml-2">(수학, 45분)</span>
                     </div>
-                </div>
-
-                <div id="importance-assign-list" class="space-y-4">
-                    <!-- Dynamic Importance Setup Items -->
-                </div>
-
-                <div class="flex flex-col sm:flex-row justify-between gap-3 pt-6">
-                    <button type="button" onclick="switchStep(2)" class="px-5 py-3.5 border border-gray-300 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-zinc-300 font-bold rounded-2xl text-xs transition-colors flex items-center justify-center space-x-1.5 touch-active order-2 sm:order-1">
-                        <i class="fa-solid fa-arrow-left"></i>
-                        <span>이전 단계</span>
-                    </button>
-                    <button type="button" onclick="switchStep(4)" class="px-7 py-4 bg-brand-500 hover:bg-brand-600 text-white font-extrabold rounded-2xl shadow-lg shadow-brand-500/25 flex items-center justify-center space-x-2 transition-all touch-active order-1 sm:order-2">
-                        <span>다음: 나의 학습 스타일</span>
-                        <i class="fa-solid fa-arrow-right"></i>
+                    <button onclick="removeHomework(101)" class="text-zinc-500 hover:text-rose-500 text-xs px-1">
+                        <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
-            </div>
-        </section>
-
-        <!-- STEP 4: Student Learning Style & Strengths -->
-        <section id="step-section-4" class="step-section space-y-6 hidden">
-            <div class="glass-card rounded-3xl p-5 sm:p-8 shadow-xl">
-                <div class="flex items-center space-x-3 mb-6">
-                    <div class="p-3 bg-brand-500/10 text-brand-500 rounded-2xl border border-brand-500/20">
-                        <i class="fa-solid fa-sliders text-xl"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">STEP 4. 나의 숙제 스타일 & 강점</h2>
-                        <p class="text-xs sm:text-sm text-gray-500 dark:text-zinc-400 mt-1">내가 선호하는 공부 방식과 자신 있는 과목을 알고리즘에 반영합니다.</p>
-                    </div>
-                </div>
-
-                <div class="space-y-5">
-                    <!-- Priority Strategy Preference -->
-                    <div class="p-4 sm:p-5 rounded-2xl bg-gray-100/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800">
-                        <label class="block font-bold text-gray-800 dark:text-zinc-200 mb-3 text-xs sm:text-sm flex items-center">
-                            <i class="fa-solid fa-bullseye text-brand-500 mr-2"></i> 어떤 순서 전략을 선호하나요?
-                        </label>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <label class="cursor-pointer border border-gray-300 dark:border-zinc-700 rounded-2xl p-4 bg-white dark:bg-zinc-950 flex flex-col justify-between hover:border-brand-500 transition-all touch-active">
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="font-extrabold text-xs text-gray-900 dark:text-white">💪 어려운 과목 먼저!</span>
-                                    <input type="radio" name="style-pref" value="hard_first" class="accent-brand-500" checked>
-                                </div>
-                                <span class="text-[11px] text-gray-500 dark:text-zinc-400">집중력이 좋을 때 머리 아픈 숙제부터 확실하게 해결</span>
-                            </label>
-
-                            <label class="cursor-pointer border border-gray-300 dark:border-zinc-700 rounded-2xl p-4 bg-white dark:bg-zinc-950 flex flex-col justify-between hover:border-brand-500 transition-all touch-active">
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="font-extrabold text-xs text-gray-900 dark:text-white">🎈 쉬운/빠른 숙제 먼저!</span>
-                                    <input type="radio" name="style-pref" value="easy_first" class="accent-brand-500">
-                                </div>
-                                <span class="text-[11px] text-gray-500 dark:text-zinc-400">빨리 끝나는 숙제를 지워나가며 빠르게 성취감 획득</span>
-                            </label>
-
-                            <label class="cursor-pointer border border-gray-300 dark:border-zinc-700 rounded-2xl p-4 bg-white dark:bg-zinc-950 flex flex-col justify-between hover:border-brand-500 transition-all touch-active">
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="font-extrabold text-xs text-gray-900 dark:text-white">⏰ 마감/학원시간 임박순!</span>
-                                    <input type="radio" name="style-pref" value="urgent_first" class="accent-brand-500">
-                                </div>
-                                <span class="text-[11px] text-gray-500 dark:text-zinc-400">가장 먼저 제출하거나 오늘 가야 하는 학원 숙제 우선</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Strong Subject Select -->
-                    <div class="p-4 sm:p-5 rounded-2xl bg-gray-100/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800">
-                        <label class="block font-bold text-gray-800 dark:text-zinc-200 mb-2 text-xs sm:text-sm flex items-center">
-                            <i class="fa-solid fa-award text-brand-500 mr-2"></i> 내가 잘하거나 가장 자신 있는 과목
-                        </label>
-                        <select id="strong-subject" class="w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-950 border border-gray-300 dark:border-zinc-700 text-sm">
-                            <option value="none">특별히 없음 (모든 과목 균등 적용)</option>
-                            <option value="수학">수학</option>
-                            <option value="영어">영어</option>
-                            <option value="국어">국어</option>
-                            <option value="과학">과학</option>
-                            <option value="사회/역사">사회/역사</option>
-                        </select>
-                    </div>
-
-                    <!-- Focus Duration Option -->
-                    <div class="p-4 sm:p-5 rounded-2xl bg-gray-100/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800">
-                        <label class="block font-bold text-gray-800 dark:text-zinc-200 mb-2 text-xs sm:text-sm flex items-center">
-                            <i class="fa-solid fa-stopwatch text-brand-500 mr-2"></i> 나의 1회 연속 집중 시간 (포모도로 단위)
-                        </label>
-                        <select id="focus-span" class="w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-950 border border-gray-300 dark:border-zinc-700 text-sm">
-                            <option value="25">25분 집중 + 5분 휴식 (클래식 포모도로)</option>
-                            <option value="40" selected>40분 집중 + 10분 휴식 (학생 강력 추천! 몰입 보장)</option>
-                            <option value="50">50분 집중 + 10분 휴식 (마라톤 열공파)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="flex flex-col sm:flex-row justify-between gap-3 pt-6">
-                    <button type="button" onclick="switchStep(3)" class="px-5 py-3.5 border border-gray-300 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-zinc-300 font-bold rounded-2xl text-xs transition-colors flex items-center justify-center space-x-1.5 touch-active order-2 sm:order-1">
-                        <i class="fa-solid fa-arrow-left"></i>
-                        <span>이전 단계</span>
-                    </button>
-                    <button type="button" onclick="generateAIReport()" class="px-8 py-4 bg-gradient-to-r from-brand-500 to-accent-neon hover:from-brand-600 hover:to-cyan-500 text-white font-black rounded-2xl shadow-xl shadow-brand-500/30 flex items-center justify-center space-x-2 transition-all touch-active text-base order-1 sm:order-2">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
-                        <span>AI 분석 리포트 생성하기</span>
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- STEP 5: AI Algorithm Result & Report Dashboard -->
-        <section id="step-section-5" class="step-section space-y-6 hidden">
             
-            <!-- Summary Banner -->
-            <div class="glass-card rounded-3xl p-5 sm:p-8 border-2 border-brand-500/50 shadow-2xl relative overflow-hidden neon-glow">
-                <div class="flex items-center space-x-2 bg-brand-500/10 border border-brand-500/30 px-3 py-1 rounded-full text-xs font-bold text-brand-600 dark:text-brand-400 w-fit mb-3">
-                    <i class="fa-solid fa-sparkles"></i>
-                    <span>AI 우선순위 분석 완료</span>
-                </div>
-                <h2 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight mb-2">
-                    오늘 숙제, 이 순서대로만 하면 <span class="text-brand-500">쓱- 끝!</span>
-                </h2>
-                <p class="text-xs sm:text-sm text-gray-600 dark:text-zinc-300 leading-relaxed" id="report-summary-text">
-                    학원 일정, 처벌 위험도, 학생 맞춤 학습 스타일을 종합 계산하여 가장 완벽한 동선을 제시합니다.
-                </p>
-
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
-                    <div class="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800">
-                        <span class="text-[10px] font-bold text-gray-500 dark:text-zinc-400">총 순수 숙제시간</span>
-                        <div class="text-base sm:text-lg font-black text-brand-600 dark:text-brand-400 mt-0.5" id="report-total-hw-time">0분</div>
-                    </div>
-                    <div class="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800">
-                        <span class="text-[10px] font-bold text-gray-500 dark:text-zinc-400">최종 종료 예정</span>
-                        <div class="text-base sm:text-lg font-black text-gray-900 dark:text-white mt-0.5" id="report-finish-time">00:00</div>
-                    </div>
-                    <div class="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800">
-                        <span class="text-[10px] font-bold text-gray-500 dark:text-zinc-400">목표 취침 여유</span>
-                        <div class="text-xs sm:text-sm font-black text-gray-900 dark:text-white mt-1" id="report-bedtime-status">안정적 🌙</div>
-                    </div>
-                    <div class="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/70 border border-gray-200 dark:border-zinc-800">
-                        <span class="text-[10px] font-bold text-gray-500 dark:text-zinc-400">숙제 성공 예측률</span>
-                        <div class="text-xs sm:text-sm font-black text-accent-purple mt-1" id="report-success-rate">98% 🚀</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Priority Task List & AI Reasoning -->
-            <div class="glass-card rounded-3xl p-5 sm:p-7 shadow-xl">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-base sm:text-lg font-black text-gray-900 dark:text-white flex items-center">
-                        <i class="fa-solid fa-list-ol text-brand-500 mr-2"></i>
-                        🔥 AI 추천 숙제 우선순위 (이유 & 스마트팁)
-                    </h3>
-                    <span class="text-xs text-gray-500 dark:text-zinc-400">체크하여 완료하기</span>
-                </div>
-
-                <div id="ai-ranked-homework-list" class="space-y-3">
-                    <!-- Dynamic Ranked Homework Cards -->
-                </div>
-            </div>
-
-            <!-- Timeline Visual Schedule -->
-            <div class="glass-card rounded-3xl p-5 sm:p-7 shadow-xl">
-                <h3 class="text-base sm:text-lg font-black text-gray-900 dark:text-white mb-4 flex items-center">
-                    <i class="fa-regular fa-clock text-brand-500 mr-2"></i>
-                    ⏰ 추천 타임라인 & 중간 휴식
-                </h3>
-
-                <!-- Timeline Visual Progress Bar -->
-                <div id="timeline-visual-bar" class="w-full h-4 rounded-full bg-gray-200 dark:bg-zinc-800 flex overflow-hidden mb-5">
-                    <!-- Dynamic Visual Segments -->
-                </div>
-
-                <div id="timeline-detail-list" class="relative border-l-2 border-brand-500/40 ml-3 pl-5 space-y-4">
-                    <!-- Dynamic Timeline Items -->
-                </div>
-            </div>
-
-            <!-- Focus Pomodoro Timer -->
-            <div class="glass-card rounded-3xl p-5 sm:p-7 shadow-xl no-print">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-base sm:text-lg font-black text-gray-900 dark:text-white flex items-center">
-                        <i class="fa-solid fa-stopwatch text-amber-500 mr-2"></i>
-                        ⏱️ 쓱- 집중 포모도로 타이머
-                    </h3>
-                    <span id="timer-status-badge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400">
-                        대기 중
-                    </span>
-                </div>
-
-                <div class="flex flex-col sm:flex-row items-center justify-between bg-gray-100/70 dark:bg-zinc-900/70 p-5 rounded-2xl border border-gray-200 dark:border-zinc-800 gap-4">
+                <div class="p-2.5 bg-cyber-bg border border-cyber-border rounded-xl flex items-center justify-between gap-2">
                     <div>
-                        <div class="text-xs text-gray-500 dark:text-zinc-400 font-bold mb-1">현재 진행할 숙제</div>
-                        <div id="timer-task-title" class="text-base font-extrabold text-gray-900 dark:text-white">1위 숙제를 선택하여 시작하세요!</div>
+                        <span class="text-xs font-bold text-white">영어 보카 80단어 완벽 암기</span>
+                        <span class="text-[10px] text-cyber-cyan font-extrabold ml-2">(영어, 30분)</span>
+                    </div>
+                    <button onclick="removeHomework(102)" class="text-zinc-500 hover:text-rose-500 text-xs px-1">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            
+                <div class="p-2.5 bg-cyber-bg border border-cyber-border rounded-xl flex items-center justify-between gap-2">
+                    <div>
+                        <span class="text-xs font-bold text-white">과학 기출문제 15문항 풀이</span>
+                        <span class="text-[10px] text-cyber-cyan font-extrabold ml-2">(과학, 35분)</span>
+                    </div>
+                    <button onclick="removeHomework(103)" class="text-zinc-500 hover:text-rose-500 text-xs px-1">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+                </div>
+
+                <div class="flex justify-between pt-3">
+                    <button onclick="prevSlide()" class="px-5 py-2.5 border border-zinc-700 hover:bg-zinc-800 text-white font-bold rounded-xl text-xs transition-colors">
+                        이전
+                    </button>
+                    <button onclick="nextSlide()" class="px-7 py-3 bg-gradient-to-r from-cyber-cyan to-cyber-purple text-black font-black rounded-2xl shadow-lg transition-all flex items-center space-x-2 touch-active">
+                        <span>다음 (위험도 설정)</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </section>
+
+            <section class="slide flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between border-b border-zinc-800 pb-3 mb-5">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-xs font-extrabold px-3 py-1 bg-cyber-pink/20 text-cyber-pink border border-cyber-pink/40 rounded-full">SLIDE 03</span>
+                            <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">🚨 안 했을 때 여파(처벌 수위) 설정</h2>
+                        </div>
+                        <i class="fa-solid fa-triangle-exclamation text-cyber-yellow text-2xl"></i>
                     </div>
 
-                    <div class="flex items-center space-x-4">
-                        <div id="pomo-display" class="text-3xl sm:text-4xl font-black font-mono text-brand-500">
-                            25:00
-                        </div>
+                    <p class="text-xs text-zinc-400 mb-5">재시험, 남아 공부, 수행평가 반영 등 숙제를 안 해갔을 때의 위험도를 지정하세요!</p>
 
-                        <div class="flex items-center space-x-2">
-                            <button type="button" onclick="startPomodoro()" id="btn-pomo-start" class="p-3 bg-brand-500 hover:bg-brand-600 text-white rounded-xl shadow-md transition-all touch-active">
-                                <i class="fa-solid fa-play"></i>
-                            </button>
-                            <button type="button" onclick="pausePomodoro()" id="btn-pomo-pause" class="p-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-md transition-all touch-active hidden">
-                                <i class="fa-solid fa-pause"></i>
-                            </button>
-                            <button type="button" onclick="resetPomodoro()" class="p-3 bg-gray-200 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 rounded-xl hover:bg-gray-300 dark:hover:bg-zinc-700 transition-all touch-active">
-                                <i class="fa-solid fa-rotate-right"></i>
-                            </button>
-                        </div>
+                    <div id="importance-assign-list" class="space-y-3 max-h-[280px] overflow-y-auto pr-1">
+                <div class="p-3 bg-cyber-bg border border-cyber-border rounded-xl flex items-center justify-between gap-2">
+                    <div>
+                        <span class="text-xs font-bold text-white">수학 쎈 C단계 3페이지</span>
+                        <span class="text-[10px] text-zinc-400 block">수학 | 45분</span>
+                    </div>
+                    <div class="flex space-x-1">
+                        <button onclick="setPriority(101, '상')" class="px-2.5 py-1 text-[10px] font-black rounded-lg bg-cyber-pink text-white shadow-md">🚨 상</button>
+                        <button onclick="setPriority(101, '중')" class="px-2.5 py-1 text-[10px] font-black rounded-lg bg-zinc-800 text-zinc-400">⚠️ 중</button>
+                        <button onclick="setPriority(101, '하')" class="px-2.5 py-1 text-[10px] font-black rounded-lg bg-zinc-800 text-zinc-400">🎈 하</button>
+                    </div>
+                </div>
+            
+                <div class="p-3 bg-cyber-bg border border-cyber-border rounded-xl flex items-center justify-between gap-2">
+                    <div>
+                        <span class="text-xs font-bold text-white">영어 보카 80단어 완벽 암기</span>
+                        <span class="text-[10px] text-zinc-400 block">영어 | 30분</span>
+                    </div>
+                    <div class="flex space-x-1">
+                        <button onclick="setPriority(102, '상')" class="px-2.5 py-1 text-[10px] font-black rounded-lg bg-zinc-800 text-zinc-400">🚨 상</button>
+                        <button onclick="setPriority(102, '중')" class="px-2.5 py-1 text-[10px] font-black rounded-lg bg-cyber-purple text-white shadow-md">⚠️ 중</button>
+                        <button onclick="setPriority(102, '하')" class="px-2.5 py-1 text-[10px] font-black rounded-lg bg-zinc-800 text-zinc-400">🎈 하</button>
+                    </div>
+                </div>
+            
+                <div class="p-3 bg-cyber-bg border border-cyber-border rounded-xl flex items-center justify-between gap-2">
+                    <div>
+                        <span class="text-xs font-bold text-white">과학 기출문제 15문항 풀이</span>
+                        <span class="text-[10px] text-zinc-400 block">과학 | 35분</span>
+                    </div>
+                    <div class="flex space-x-1">
+                        <button onclick="setPriority(103, '상')" class="px-2.5 py-1 text-[10px] font-black rounded-lg bg-zinc-800 text-zinc-400">🚨 상</button>
+                        <button onclick="setPriority(103, '중')" class="px-2.5 py-1 text-[10px] font-black rounded-lg bg-zinc-800 text-zinc-400">⚠️ 중</button>
+                        <button onclick="setPriority(103, '하')" class="px-2.5 py-1 text-[10px] font-black rounded-lg bg-cyber-cyan text-black font-bold">🎈 하</button>
                     </div>
                 </div>
             </div>
+                </div>
 
-            <!-- Control Action Buttons -->
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-3 pt-4 no-print">
-                <button type="button" onclick="switchStep(2)" class="w-full sm:w-auto px-5 py-3.5 border border-gray-300 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-zinc-300 font-bold rounded-2xl text-xs transition-colors flex items-center justify-center space-x-1.5 touch-active">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                    <span>숙제 추가 및 수정하기</span>
-                </button>
-
-                <div class="flex items-center space-x-2 w-full sm:w-auto">
-                    <button type="button" onclick="window.print()" class="w-1/2 sm:w-auto px-5 py-3.5 bg-gray-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-extrabold rounded-2xl text-xs shadow-md transition-all touch-active flex items-center justify-center space-x-1.5">
-                        <i class="fa-solid fa-print"></i>
-                        <span>리포트 인쇄/PDF 저장</span>
+                <div class="flex justify-between pt-3">
+                    <button onclick="prevSlide()" class="px-5 py-2.5 border border-zinc-700 hover:bg-zinc-800 text-white font-bold rounded-xl text-xs transition-colors">
+                        이전
                     </button>
-                    <button type="button" onclick="resetAllData()" class="w-1/2 sm:w-auto px-5 py-3.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 font-bold rounded-2xl text-xs transition-all touch-active flex items-center justify-center space-x-1.5">
+                    <button onclick="nextSlide()" class="px-7 py-3 bg-gradient-to-r from-cyber-cyan to-cyber-purple text-black font-black rounded-2xl shadow-lg transition-all flex items-center space-x-2 touch-active">
+                        <span>다음 (학습 스타일)</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </section>
+
+            <section class="slide flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between border-b border-zinc-800 pb-3 mb-5">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-xs font-extrabold px-3 py-1 bg-cyber-purple/20 text-cyber-purple border border-cyber-purple/40 rounded-full">SLIDE 04</span>
+                            <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">🎯 개인 맞춤 공부 스타일 선택</h2>
+                        </div>
+                        <i class="fa-solid fa-sliders text-cyber-cyan text-2xl"></i>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="p-4 bg-cyber-card border border-cyber-border rounded-2xl">
+                            <label class="block font-extrabold text-xs text-cyber-cyan mb-3">어떤 방식으로 숙제 순서를 AI가 계산할까요?</label>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <label class="border border-zinc-700 rounded-xl p-3 bg-cyber-bg cursor-pointer hover:border-cyber-cyan transition-all flex flex-col justify-between">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="font-black text-xs text-white">🔥 매도 먼저 맞자!</span>
+                                        <input type="radio" name="style-pref" value="hard_first" class="accent-cyan-400" checked="">
+                                    </div>
+                                    <span class="text-[10px] text-zinc-400">뇌가 싱싱할 때 가장 어렵고 빡센 숙제부터 해치우기</span>
+                                </label>
+                                <label class="border border-zinc-700 rounded-xl p-3 bg-cyber-bg cursor-pointer hover:border-cyber-cyan transition-all flex flex-col justify-between">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="font-black text-xs text-white">⚡ 콤보 채우기!</span>
+                                        <input type="radio" name="style-pref" value="easy_first" class="accent-cyan-400">
+                                    </div>
+                                    <span class="text-[10px] text-zinc-400">쉬운 숙제를 빨리 끝내고 연승 모멘텀 얻기</span>
+                                </label>
+                                <label class="border border-zinc-700 rounded-xl p-3 bg-cyber-bg cursor-pointer hover:border-cyber-cyan transition-all flex flex-col justify-between">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="font-black text-xs text-white">🚨 생존 특공대!</span>
+                                        <input type="radio" name="style-pref" value="urgent_first" class="accent-cyan-400">
+                                    </div>
+                                    <span class="text-[10px] text-zinc-400">위험도(처벌) 최상 및 임박 숙제 우선 처리</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="p-4 bg-cyber-card border border-cyber-border rounded-2xl">
+                                <label class="block font-extrabold text-xs text-cyber-pink mb-2">내가 자신 있는 최애 과목</label>
+                                <select id="strong-subject" class="w-full p-2 bg-cyber-bg border border-zinc-700 rounded-xl text-xs text-white focus:border-cyber-pink focus:outline-none">
+                                    <option value="none">없음 (동일하게 계산)</option>
+                                    <option value="수학">수학</option>
+                                    <option value="영어">영어</option>
+                                    <option value="국어">국어</option>
+                                    <option value="과학">과학</option>
+                                </select>
+                            </div>
+                            <div class="p-4 bg-cyber-card border border-cyber-border rounded-2xl">
+                                <label class="block font-extrabold text-xs text-cyber-yellow mb-2">집중 모드 타임 스팬</label>
+                                <select id="focus-span" class="w-full p-2 bg-cyber-bg border border-zinc-700 rounded-xl text-xs text-white focus:border-cyber-yellow focus:outline-none">
+                                    <option value="25">25분 집중 + 5분 휴식 (포모도로)</option>
+                                    <option value="40" selected="">40분 집중 + 10분 휴식 (중3 강추)</option>
+                                    <option value="50">50분 빡공 + 10분 휴식</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between pt-3">
+                    <button onclick="prevSlide()" class="px-5 py-2.5 border border-zinc-700 hover:bg-zinc-800 text-white font-bold rounded-xl text-xs transition-colors">
+                        이전
+                    </button>
+                    <button onclick="generateAIReportAndSlide()" class="px-8 py-3 bg-gradient-to-r from-cyber-cyan via-cyber-purple to-cyber-pink text-black font-black rounded-2xl shadow-xl transition-all flex items-center space-x-2 touch-active">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>AI 분석 실행 (결과 보기)</span>
+                    </button>
+                </div>
+            </section>
+
+            <section class="slide flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between border-b border-zinc-800 pb-3 mb-3">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-xs font-black px-3 py-1 bg-gradient-to-r from-cyber-cyan to-cyber-purple text-black rounded-full shadow-md">FINAL PLAN</span>
+                            <h2 class="text-2xl font-black text-white tracking-tight">⚡ AI 최적화 숙제 타임어택</h2>
+                        </div>
+                        <button onclick="copySummaryText()" class="px-3 py-1.5 bg-cyber-card hover:bg-zinc-800 text-cyber-cyan border border-cyber-cyan/40 text-xs font-extrabold rounded-xl transition-all flex items-center space-x-1">
+                            <i class="fa-solid fa-copy"></i>
+                            <span>카톡 요약 복사 📋</span>
+                        </button>
+                    </div>
+
+                    <!-- AI Dashboard Grid -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+                        <div class="p-3 bg-cyber-card border border-cyber-border rounded-xl">
+                            <span class="text-[10px] text-zinc-400 font-bold block">총 숙제 시간</span>
+                            <span id="report-total-hw-time" class="text-sm font-black text-cyber-cyan">0분</span>
+                        </div>
+                        <div class="p-3 bg-cyber-card border border-cyber-border rounded-xl">
+                            <span class="text-[10px] text-zinc-400 font-bold block">클리어 예상 시각</span>
+                            <span id="report-finish-time" class="text-sm font-black text-white">00:00</span>
+                        </div>
+                        <div class="p-3 bg-cyber-card border border-cyber-border rounded-xl">
+                            <span class="text-[10px] text-zinc-400 font-bold block">취침 상태</span>
+                            <span id="report-bedtime-status" class="text-xs font-black text-cyber-cyan mt-1 block">안정적 🌙</span>
+                        </div>
+                        <div class="p-3 bg-cyber-card border border-cyber-border rounded-xl">
+                            <span class="text-[10px] text-zinc-400 font-bold block">클리어 확률</span>
+                            <span id="report-success-rate" class="text-xs font-black text-cyber-pink mt-1 block">99.9% 🔥</span>
+                        </div>
+                    </div>
+
+                    <!-- Live Task Timer Widget -->
+                    <div class="p-3 bg-cyber-bg border border-cyber-cyan/50 rounded-2xl mb-3 flex items-center justify-between shadow-lg shadow-cyan-500/10">
+                        <div>
+                            <span class="text-[10px] text-cyber-cyan font-black uppercase tracking-wider block">LIVE TASK TIMER</span>
+                            <span id="live-timer-task-name" class="text-xs font-bold text-white">숙제 카드의 '타이머' 버튼을 누르세요</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span id="live-timer-display" class="text-2xl font-black font-mono text-neon-cyan">25:00</span>
+                            <div class="flex space-x-1">
+                                <button onclick="toggleTimer()" id="btn-timer-toggle" class="p-2 bg-gradient-to-r from-cyber-cyan to-cyber-purple text-black rounded-xl text-xs font-black hover:opacity-90 transition-all">
+                                    <i class="fa-solid fa-play"></i>
+                                </button>
+                                <button onclick="resetTimer()" class="p-2 bg-zinc-800 text-zinc-300 rounded-xl text-xs font-black hover:bg-zinc-700 transition-colors">
+                                    <i class="fa-solid fa-rotate-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ranked Homework List -->
+                    <div id="ai-ranked-homework-list" class="space-y-2 max-h-[170px] overflow-y-auto pr-1">
+                        <!-- Dynamic Cards -->
+                    </div>
+                </div>
+
+                <div class="flex justify-between pt-2">
+                    <button onclick="prevSlide()" class="px-5 py-2.5 border border-zinc-700 hover:bg-zinc-800 text-white font-bold rounded-xl text-xs transition-colors">
+                        이전
+                    </button>
+                    <button onclick="goToSlide(0)" class="px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-cyber-cyan font-bold rounded-xl text-xs transition-colors flex items-center space-x-1">
                         <i class="fa-solid fa-rotate-left"></i>
-                        <span>처음부터 다시</span>
+                        <span>처음으로 🔄</span>
                     </button>
                 </div>
-            </div>
+            </section>
 
-        </section>
+        </div>
 
     </main>
 
-    <!-- Modal Dialog -->
-    <div id="app-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
-        <div class="glass-card max-w-sm w-full rounded-3xl p-6 text-center shadow-2xl border-2 border-brand-500">
-            <div class="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center mx-auto mb-3">
-                <i class="fa-solid fa-circle-info text-xl"></i>
-            </div>
-            <h3 id="modal-title" class="text-base font-black text-gray-900 dark:text-white mb-1">알림</h3>
-            <p id="modal-message" class="text-xs text-gray-600 dark:text-zinc-400 mb-5 leading-relaxed">메시지 내용</p>
-            <div id="modal-actions" class="flex justify-center space-x-2">
-                <button type="button" onclick="closeModal()" class="w-full py-3 bg-brand-500 text-white font-extrabold rounded-xl text-xs touch-active">
-                    확인
-                </button>
-            </div>
+    <footer class="max-w-[1100px] w-full mx-auto flex items-center justify-between pt-3 text-xs text-zinc-500">
+        <div class="flex items-center space-x-2">
+            <button onclick="prevSlide()" class="px-3 py-1.5 bg-cyber-card border border-cyber-border rounded-xl text-white hover:border-cyber-cyan transition-all font-bold">
+                ◀ 이전
+            </button>
+            <span id="slide-indicator" class="font-extrabold text-cyber-cyan">SLIDE 1 / 5</span>
+            <button onclick="nextSlide()" class="px-3 py-1.5 bg-cyber-card border border-cyber-border rounded-xl text-white hover:border-cyber-cyan transition-all font-bold">
+                다음 ▶
+            </button>
         </div>
-    </div>
-
-    <footer class="bg-white dark:bg-zinc-900 border-t border-gray-200 dark:border-zinc-800 py-4 mt-12 text-center text-xs text-gray-500 dark:text-zinc-500 no-print">
-        <p>숙 쓱 (숙제 쓱- 끝!) &copy; AI 숙제 우선순위 플래너 | 학생을 위한 스마트 학습 도구</p>
+        <span class="hidden sm:inline">⌨️ 키보드 방향키(← →) 또는 스페이스바로 슬라이드를 제어할 수 있습니다.</span>
     </footer>
 
+    <!-- Toast Notification Overlay -->
+    <div id="copy-toast" class="fixed bottom-5 right-5 bg-gradient-to-r from-cyber-cyan via-cyber-purple to-cyber-pink text-black px-5 py-3 rounded-2xl font-black text-sm shadow-2xl transition-all duration-300 z-50 flex items-center space-x-2 opacity-100">
+        <i class="fa-solid fa-circle-check text-base"></i>
+        <span id="toast-message">🎉 HTML 전체 코드가 클립보드에 복사되었습니다!</span>
+    </div>
+
     <script>
-        let currentStep = 1;
-        let pomodoroTimer = null;
-        let pomodoroSeconds = 25 * 60;
-        let isPomodoroRunning = false;
+        let currentSlideIndex = 0;
+        let timerInterval = null;
+        let timerSeconds = 25 * 60;
+        let isTimerRunning = false;
 
         let appState = {
             startTime: '16:00',
             sleepTime: '23:30',
             academies: [
-                { id: 101, name: '수학 학원', startTime: '17:00', endTime: '19:00' }
+                { id: 1, name: '수학 학원', startTime: '17:00', endTime: '19:00' }
             ],
             homeworks: [
-                { id: 1, name: '수학 워크북 12~15p', subject: '수학', duration: 40, priority: '상', completed: false },
-                { id: 2, name: '영어 단어 50개 암기', subject: '영어', duration: 25, priority: '중', completed: false },
-                { id: 3, name: '국어 독서록 작성', subject: '국어', duration: 30, priority: '하', completed: false }
+                { id: 101, name: '수학 쎈 C단계 3페이지', subject: '수학', duration: 45, priority: '상', completed: false },
+                { id: 102, name: '영어 보카 80단어 완벽 암기', subject: '영어', duration: 30, priority: '중', completed: false },
+                { id: 103, name: '과학 기출문제 15문항 풀이', subject: '과학', duration: 35, priority: '하', completed: false }
             ],
             style: {
                 pref: 'hard_first',
@@ -593,31 +1170,91 @@
         };
 
         window.onload = function() {
-            if (window.lucide) lucide.createIcons();
-            loadLocalStorage();
             renderAcademies();
             renderHomeworks();
             renderImportanceAssign();
-            switchStep(1);
+            goToSlide(0);
+
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ') {
+                    if (e.key === ' ') e.preventDefault();
+                    nextSlide();
+                }
+                if (e.key === 'ArrowLeft') prevSlide();
+            });
         };
 
-        // Theme Toggle Function
-        function toggleTheme() {
-            const html = document.documentElement;
-            if (html.classList.contains('dark')) {
-                html.classList.remove('dark');
-                localStorage.setItem('sukssuk_theme', 'light');
+        function showToast(message) {
+            const toast = document.getElementById('copy-toast');
+            const msgEl = document.getElementById('toast-message');
+            msgEl.innerText = message;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        // Entire HTML Code Copying Functionality
+        function copyEntireHTMLCode() {
+            const fullHTML = document.documentElement.outerHTML;
+            const formattedHTML = "<!DOCTYPE html>\n" + fullHTML;
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(formattedHTML).then(() => {
+                    showToast('🎉 HTML 전체 코드가 클립보드에 복사되었습니다!');
+                }).catch(() => {
+                    fallbackCopyText(formattedHTML);
+                });
             } else {
-                html.classList.add('dark');
-                localStorage.setItem('sukssuk_theme', 'dark');
+                fallbackCopyText(formattedHTML);
             }
         }
 
-        if (localStorage.getItem('sukssuk_theme') === 'light') {
-            document.documentElement.classList.remove('dark');
+        function fallbackCopyText(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast('🎉 HTML 전체 코드가 클립보드에 복사되었습니다!');
+            } catch (err) {
+                showToast('복사에 실패했습니다. 수동으로 드래그하여 복사하세요.');
+            }
+            document.body.removeChild(textArea);
         }
 
-        // Helper Time Functions
+        function goToSlide(index) {
+            if (index < 0) index = 0;
+            if (index > 4) index = 4;
+            currentSlideIndex = index;
+
+            const track = document.getElementById('slider-track');
+            track.style.transform = `translateX(-${index * 20}%)`;
+
+            document.getElementById('slide-indicator').innerText = `SLIDE ${index + 1} / 5`;
+
+            document.querySelectorAll('.slide-nav-btn').forEach((btn, i) => {
+                if (i === index) {
+                    btn.className = 'slide-nav-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-gradient-to-r from-cyber-cyan to-cyber-purple text-black font-extrabold';
+                } else {
+                    btn.className = 'slide-nav-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all text-zinc-400 hover:text-white';
+                }
+            });
+
+            if (index === 2) renderImportanceAssign();
+        }
+
+        function nextSlide() { goToSlide(currentSlideIndex + 1); }
+        function prevSlide() { goToSlide(currentSlideIndex - 1); }
+
         function parseToMinutes(timeStr) {
             if (!timeStr) return 0;
             const [h, m] = timeStr.split(':').map(Number);
@@ -630,65 +1267,20 @@
             return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
         }
 
-        function switchStep(stepNum) {
-            currentStep = stepNum;
-
-            for (let i = 1; i <= 5; i++) {
-                const sec = document.getElementById(`step-section-${i}`);
-                const nav = document.getElementById(`step-nav-${i}`);
-                const num = document.getElementById(`step-num-${i}`);
-
-                if (sec) sec.classList.toggle('hidden', i !== stepNum);
-
-                if (nav && num) {
-                    if (i === stepNum) {
-                        nav.classList.remove('opacity-40');
-                        num.className = 'w-8 h-8 rounded-xl bg-brand-500 text-white flex items-center justify-center text-xs font-black mb-1 shadow-md';
-                    } else if (i < stepNum) {
-                        nav.classList.remove('opacity-40');
-                        num.className = 'w-8 h-8 rounded-xl bg-brand-500/20 text-brand-600 dark:text-brand-400 flex items-center justify-center text-xs font-black mb-1';
-                    } else {
-                        nav.classList.add('opacity-40');
-                        num.className = 'w-8 h-8 rounded-xl bg-gray-200 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 flex items-center justify-center text-xs font-black mb-1';
-                    }
-                }
-            }
-
-            if (stepNum === 3) renderImportanceAssign();
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            if (window.lucide) lucide.createIcons();
-            saveLocalStorage();
-        }
-
         function renderAcademies() {
             const listEl = document.getElementById('academy-list');
             if (!listEl) return;
-
-            if (appState.academies.length === 0) {
-                listEl.innerHTML = `<p class="text-xs text-gray-500 dark:text-zinc-500 py-2 text-center">등록된 학원 일정이 없습니다.</p>`;
-                return;
-            }
-
             listEl.innerHTML = appState.academies.map(ac => `
-                <div class="p-3 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl flex items-center justify-between gap-2">
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 flex-grow">
-                        <input type="text" value="${ac.name}" onchange="updateAcademy(${ac.id}, 'name', this.value)" placeholder="학원 이름" class="px-3 py-1.5 text-xs rounded-lg bg-gray-50 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700">
-                        <div class="flex items-center space-x-1">
-                            <span class="text-[10px] text-gray-500 shrink-0">시작:</span>
-                            <input type="time" value="${ac.startTime}" onchange="updateAcademy(${ac.id}, 'startTime', this.value)" class="w-full px-2 py-1.5 text-xs rounded-lg bg-gray-50 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700">
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <span class="text-[10px] text-gray-500 shrink-0">종료:</span>
-                            <input type="time" value="${ac.endTime}" onchange="updateAcademy(${ac.id}, 'endTime', this.value)" class="w-full px-2 py-1.5 text-xs rounded-lg bg-gray-50 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700">
-                        </div>
+                <div class="p-2.5 bg-cyber-bg border border-cyber-border rounded-xl flex items-center justify-between gap-2">
+                    <span class="text-xs font-bold text-white shrink-0">${ac.name}</span>
+                    <div class="flex items-center space-x-1 text-[11px] text-cyber-cyan font-mono">
+                        <span>${ac.startTime} ~ ${ac.endTime}</span>
                     </div>
-                    <button type="button" onclick="removeAcademy(${ac.id})" class="p-2 text-gray-400 hover:text-rose-500 rounded-lg touch-active">
-                        <i class="fa-solid fa-trash-can"></i>
+                    <button onclick="removeAcademy(${ac.id})" class="text-zinc-500 hover:text-rose-500 text-xs px-1">
+                        <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
             `).join('');
-            if (window.lucide) lucide.createIcons();
         }
 
         function addAcademyItem() {
@@ -701,11 +1293,6 @@
             renderAcademies();
         }
 
-        function updateAcademy(id, key, value) {
-            const target = appState.academies.find(a => a.id === id);
-            if (target) target[key] = value;
-        }
-
         function removeAcademy(id) {
             appState.academies = appState.academies.filter(a => a.id !== id);
             renderAcademies();
@@ -714,32 +1301,17 @@
         function renderHomeworks() {
             const listEl = document.getElementById('homework-list');
             if (!listEl) return;
-
-            if (appState.homeworks.length === 0) {
-                listEl.innerHTML = `<div class="p-6 text-center text-xs text-gray-500 dark:text-zinc-500 border border-dashed border-gray-300 dark:border-zinc-800 rounded-2xl">
-                    등록된 숙제가 없습니다. 원클릭 추가 버튼이나 직접 등록해보세요!
-                </div>`;
-                return;
-            }
-
             listEl.innerHTML = appState.homeworks.map(hw => `
-                <div class="p-3.5 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl flex items-center justify-between gap-3">
-                    <div class="flex-grow">
-                        <div class="flex items-center space-x-2">
-                            <span class="px-2 py-0.5 text-[10px] font-extrabold rounded-md bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20">${hw.subject}</span>
-                            <span class="text-xs font-bold text-gray-900 dark:text-white">${hw.name}</span>
-                        </div>
-                        <div class="text-[11px] text-gray-500 dark:text-zinc-400 mt-1 flex space-x-3">
-                            <span>⏱️ ${hw.duration}분 소요</span>
-                            <span>⭐ 중요도: ${hw.priority}</span>
-                        </div>
+                <div class="p-2.5 bg-cyber-bg border border-cyber-border rounded-xl flex items-center justify-between gap-2">
+                    <div>
+                        <span class="text-xs font-bold text-white">${hw.name}</span>
+                        <span class="text-[10px] text-cyber-cyan font-extrabold ml-2">(${hw.subject}, ${hw.duration}분)</span>
                     </div>
-                    <button type="button" onclick="removeHomework(${hw.id})" class="p-2 text-gray-400 hover:text-rose-500 rounded-xl touch-active">
-                        <i class="fa-solid fa-trash-can"></i>
+                    <button onclick="removeHomework(${hw.id})" class="text-zinc-500 hover:text-rose-500 text-xs px-1">
+                        <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
             `).join('');
-            if (window.lucide) lucide.createIcons();
         }
 
         function addPresetHomework(name, subject, duration) {
@@ -759,10 +1331,7 @@
             const subjectSelect = document.getElementById('hw-input-subject');
             const durationInput = document.getElementById('hw-input-duration');
 
-            if (!nameInput.value.trim()) {
-                showModal('숙제 이름 필요', '숙제 이름을 입력해주세요!');
-                return;
-            }
+            if (!nameInput.value.trim()) return;
 
             appState.homeworks.push({
                 id: Date.now(),
@@ -785,393 +1354,207 @@
         function renderImportanceAssign() {
             const container = document.getElementById('importance-assign-list');
             if (!container) return;
-
-            if (appState.homeworks.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-500 py-4 text-center">등록된 숙제가 없습니다. STEP 2에서 숙제를 먼저 입력해주세요.</p>`;
-                return;
-            }
-
             container.innerHTML = appState.homeworks.map(hw => `
-                <div class="p-4 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="p-3 bg-cyber-bg border border-cyber-border rounded-xl flex items-center justify-between gap-2">
                     <div>
-                        <div class="flex items-center space-x-2">
-                            <span class="text-xs font-bold text-gray-900 dark:text-white">${hw.name}</span>
-                            <span class="text-[10px] text-gray-500">(${hw.subject}, ${hw.duration}분)</span>
-                        </div>
-                        <p class="text-[11px] text-gray-500 dark:text-zinc-400 mt-1">안 해갔을 때의 처벌/불이익 심각도를 지정하세요.</p>
+                        <span class="text-xs font-bold text-white">${hw.name}</span>
+                        <span class="text-[10px] text-zinc-400 block">${hw.subject} | ${hw.duration}분</span>
                     </div>
-
-                    <div class="flex items-center space-x-1.5 shrink-0">
-                        <button type="button" onclick="setPriority(${hw.id}, '상')" class="px-3 py-2 rounded-xl text-xs font-bold transition-all ${hw.priority === '상' ? 'bg-rose-500 text-white shadow-md' : 'bg-gray-100 dark:bg-zinc-900 text-gray-600 dark:text-zinc-400'}">
-                            🚨 상 (남김/벌점/호출)
-                        </button>
-                        <button type="button" onclick="setPriority(${hw.id}, '중')" class="px-3 py-2 rounded-xl text-xs font-bold transition-all ${hw.priority === '중' ? 'bg-amber-500 text-white shadow-md' : 'bg-gray-100 dark:bg-zinc-900 text-gray-600 dark:text-zinc-400'}">
-                            ⚠️ 중 (경고/잔소리)
-                        </button>
-                        <button type="button" onclick="setPriority(${hw.id}, '하')" class="px-3 py-2 rounded-xl text-xs font-bold transition-all ${hw.priority === '하' ? 'bg-brand-500 text-white shadow-md' : 'bg-gray-100 dark:bg-zinc-900 text-gray-600 dark:text-zinc-400'}">
-                            🎈 하 (소량 감점)
-                        </button>
+                    <div class="flex space-x-1">
+                        <button onclick="setPriority(${hw.id}, '상')" class="px-2.5 py-1 text-[10px] font-black rounded-lg ${hw.priority === '상' ? 'bg-cyber-pink text-white shadow-md' : 'bg-zinc-800 text-zinc-400'}">🚨 상</button>
+                        <button onclick="setPriority(${hw.id}, '중')" class="px-2.5 py-1 text-[10px] font-black rounded-lg ${hw.priority === '중' ? 'bg-cyber-purple text-white shadow-md' : 'bg-zinc-800 text-zinc-400'}">⚠️ 중</button>
+                        <button onclick="setPriority(${hw.id}, '하')" class="px-2.5 py-1 text-[10px] font-black rounded-lg ${hw.priority === '하' ? 'bg-cyber-cyan text-black font-bold' : 'bg-zinc-800 text-zinc-400'}">🎈 하</button>
                     </div>
                 </div>
             `).join('');
         }
 
-        function setPriority(hwId, level) {
-            const hw = appState.homeworks.find(h => h.id === hwId);
+        function setPriority(id, level) {
+            const hw = appState.homeworks.find(h => h.id === id);
             if (hw) {
                 hw.priority = level;
                 renderImportanceAssign();
             }
         }
 
-        function generateAIReport() {
-            if (appState.homeworks.length === 0) {
-                showModal('숙제 필요', '우선순위를 정할 숙제를 최소 1개 이상 등록해주세요.');
-                switchStep(2);
-                return;
-            }
-
-            // Save Inputs
+        function generateAIReportAndSlide() {
             appState.startTime = document.getElementById('start-time').value || '16:00';
             appState.sleepTime = document.getElementById('sleep-time').value || '23:30';
 
             const selectedStyle = document.querySelector('input[name="style-pref"]:checked');
             appState.style.pref = selectedStyle ? selectedStyle.value : 'hard_first';
             appState.style.strongSubject = document.getElementById('strong-subject').value || 'none';
-            appState.style.focusSpan = parseInt(document.getElementById('focus-span').value) || 40;
 
             const startMin = parseToMinutes(appState.startTime);
             const sleepMin = parseToMinutes(appState.sleepTime);
 
-            // AI Priority Scoring Algorithm
-            const homeworkWithScores = appState.homeworks.map(hw => {
+            const scoredHw = appState.homeworks.map(hw => {
                 let score = 0;
-
-                // 1. Importance & Punishment Level
                 if (hw.priority === '상') score += 50;
                 else if (hw.priority === '중') score += 30;
                 else score += 10;
 
-                // 2. Schedule Urgency Matching
-                const matchingAcademy = appState.academies.find(ac => ac.name.includes(hw.subject) || hw.subject.includes(ac.name));
-                if (matchingAcademy) {
-                    const acStartMin = parseToMinutes(matchingAcademy.startTime);
-                    if (acStartMin > startMin) {
-                        const timeUntilAcademy = acStartMin - startMin;
-                        if (timeUntilAcademy < 120) score += 40;
-                        else score += 20;
-                    }
+                if (appState.style.pref === 'hard_first') score += (hw.duration / 10) * 4;
+                else if (appState.style.pref === 'easy_first') score += (100 - hw.duration) * 0.4;
+                else if (appState.style.pref === 'urgent_first') {
+                    if (hw.priority === '상') score += 40;
                 }
 
-                // 3. Learning Preference Weight
-                if (appState.style.pref === 'hard_first') {
-                    score += (hw.duration / 10) * 3;
-                } else if (appState.style.pref === 'easy_first') {
-                    score += (100 - hw.duration) * 0.3;
-                } else if (appState.style.pref === 'urgent_first') {
-                    if (matchingAcademy) score += 35;
-                }
-
-                // 4. Strong Subject Adjustment
-                if (appState.style.strongSubject !== 'none' && hw.subject === appState.style.strongSubject) {
-                    score += 15;
-                }
+                if (appState.style.strongSubject !== 'none' && hw.subject === appState.style.strongSubject) score += 15;
 
                 return { ...hw, aiScore: Math.round(score) };
             });
 
-            // Sort Descending
-            homeworkWithScores.sort((a, b) => b.aiScore - a.aiScore);
-            appState.calculatedPlan = homeworkWithScores;
+            scoredHw.sort((a, b) => b.aiScore - a.aiScore);
+            appState.calculatedPlan = scoredHw;
 
-            // Generate Schedule Timeline & Breaks
-            let currentMin = startMin;
-            let totalHwDuration = 0;
+            let totalMin = scoredHw.reduce((acc, cur) => acc + cur.duration, 0);
+            let finishMin = startMin + totalMin;
 
-            const sortedAcademies = [...appState.academies].map(ac => ({
-                name: ac.name,
-                start: parseToMinutes(ac.startTime),
-                end: parseToMinutes(ac.endTime)
-            })).sort((a, b) => a.start - b.start);
+            document.getElementById('report-total-hw-time').innerText = `${totalMin}분`;
+            document.getElementById('report-finish-time').innerText = formatFromMinutes(finishMin);
 
-            const timelineItems = [];
-
-            homeworkWithScores.forEach((hw, idx) => {
-                totalHwDuration += hw.duration;
-                let remainingHw = hw.duration;
-
-                while (remainingHw > 0) {
-                    let ongoingAc = sortedAcademies.find(ac => currentMin >= ac.start && currentMin < ac.end);
-                    if (ongoingAc) {
-                        timelineItems.push({
-                            type: 'ACADEMY',
-                            title: `🏫 ${ongoingAc.name}`,
-                            start: formatFromMinutes(currentMin),
-                            end: formatFromMinutes(ongoingAc.end),
-                            duration: ongoingAc.end - currentMin
-                        });
-                        currentMin = ongoingAc.end;
-                        continue;
-                    }
-
-                    let nextAc = sortedAcademies.find(ac => ac.start > currentMin);
-                    let maxAvailableSlot = remainingHw;
-                    if (nextAc && (currentMin + maxAvailableSlot > nextAc.start)) {
-                        maxAvailableSlot = nextAc.start - currentMin;
-                    }
-
-                    if (maxAvailableSlot <= 0) {
-                        currentMin = nextAc.end;
-                        continue;
-                    }
-
-                    let currentChunk = Math.min(remainingHw, maxAvailableSlot, appState.style.focusSpan);
-                    let blockEnd = currentMin + currentChunk;
-
-                    timelineItems.push({
-                        type: 'HW',
-                        title: hw.name,
-                        subject: hw.subject,
-                        rank: idx + 1,
-                        start: formatFromMinutes(currentMin),
-                        end: formatFromMinutes(blockEnd),
-                        duration: currentChunk
-                    });
-
-                    currentMin = blockEnd;
-                    remainingHw -= currentChunk;
-
-                    if (remainingHw > 0 && (!nextAc || currentMin < nextAc.start)) {
-                        timelineItems.push({
-                            type: 'BREAK',
-                            title: '☕ 10분 휴식',
-                            start: formatFromMinutes(currentMin),
-                            end: formatFromMinutes(currentMin + 10),
-                            duration: 10
-                        });
-                        currentMin += 10;
-                    }
-                }
-            });
-
-            // Update Summary Stats
-            document.getElementById('report-total-hw-time').innerText = `${totalHwDuration}분`;
-            document.getElementById('report-finish-time').innerText = formatFromMinutes(currentMin);
-
-            const bedtimeStatus = document.getElementById('report-bedtime-status');
-            if (currentMin <= sleepMin) {
-                bedtimeStatus.innerText = '안정적 🌙';
-                bedtimeStatus.className = 'text-xs sm:text-sm font-black text-brand-500 mt-1';
+            const bedtimeEl = document.getElementById('report-bedtime-status');
+            if (finishMin <= sleepMin) {
+                bedtimeEl.innerText = '안정적 🌙';
+                bedtimeEl.className = 'text-xs font-black text-cyber-cyan mt-1 block';
             } else {
-                bedtimeStatus.innerText = '취침시간 초과 ⚠️';
-                bedtimeStatus.className = 'text-xs sm:text-sm font-black text-rose-500 mt-1';
+                bedtimeEl.innerText = '취침 초과 ⚠️';
+                bedtimeEl.className = 'text-xs font-black text-cyber-pink mt-1 block';
             }
 
-            renderRankedCards(homeworkWithScores);
-            renderTimeline(timelineItems, startMin, currentMin);
-
-            switchStep(5);
-
-            confetti({
-                particleCount: 80,
-                spread: 70,
-                origin: { y: 0.6 }
-            });
-        }
-
-        function getTaskTipAndReason(hw, rank) {
-            let reason = "";
-            let tip = "";
-
-            if (hw.priority === '상') {
-                reason = "안 했을 때의 불이익/처벌 경중이 '상'으로 매우 무겁기 때문에 최우선 배치되었습니다.";
-            } else if (rank === 1) {
-                reason = "학습 스타일 가중치와 소요시간 효율을 고려한 결과 출발 과목으로 가장 적절합니다.";
-            } else {
-                reason = "핵심 과목 완수 후 몰입도를 유지하면서 완성하기에 최적인 순서입니다.";
-            }
-
-            if (hw.subject === '수학') tip = "💡 팁: 개념 공식 노트와 풀이장을 미리 펴두고 40분 타이머로 집중하세요.";
-            else if (hw.subject === '영어') tip = "💡 팁: 소리 내어 읽으며 암기하면 단어 완수 시간이 대폭 단축됩니다.";
-            else if (hw.subject === '국어') tip = "💡 팁: 지문의 핵심 요약 문장부터 찾아 밑줄 치며 작성하세요.";
-            else tip = "💡 팁: 타이머를 켜두고 스마트폰은 딴 주머니에 넣어두세요!";
-
-            return { reason, tip };
+            renderRankedCards(scoredHw);
+            goToSlide(4);
         }
 
         function renderRankedCards(rankedHw) {
             const container = document.getElementById('ai-ranked-homework-list');
             if (!container) return;
 
-            container.innerHTML = rankedHw.map((hw, idx) => {
-                const { reason, tip } = getTaskTipAndReason(hw, idx + 1);
-                return `
-                    <div class="p-4 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl shadow-sm hover:border-brand-500/50 transition-all">
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="flex items-start space-x-3">
-                                <button type="button" onclick="toggleTaskComplete(${hw.id})" class="mt-0.5 w-6 h-6 rounded-lg border border-gray-300 dark:border-zinc-700 flex items-center justify-center ${hw.completed ? 'bg-brand-500 border-brand-500 text-white' : 'bg-gray-50 dark:bg-zinc-900'}">
-                                    ${hw.completed ? '<i class="fa-solid fa-check text-xs"></i>' : ''}
-                                </button>
-                                <div>
-                                    <div class="flex items-center space-x-2">
-                                        <span class="px-2 py-0.5 rounded-md text-[10px] font-black bg-brand-500 text-white">
-                                            우선순위 ${idx + 1}위
-                                        </span>
-                                        <span class="text-xs font-bold text-gray-500">(${hw.subject})</span>
-                                    </div>
-                                    <h4 class="text-sm font-extrabold text-gray-900 dark:text-white mt-1 ${hw.completed ? 'line-through opacity-50' : ''}">${hw.name}</h4>
-                                    <p class="text-xs text-gray-600 dark:text-zinc-400 mt-1 font-medium">${reason}</p>
-                                    <p class="text-[11px] text-brand-600 dark:text-brand-400 mt-1.5 font-bold">${tip}</p>
-                                </div>
+            container.innerHTML = rankedHw.map((hw, idx) => `
+                <div class="p-3 bg-cyber-bg border border-cyber-border rounded-xl flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <button onclick="toggleTaskComplete(${hw.id})" class="w-5 h-5 rounded-md border border-zinc-700 flex items-center justify-center ${hw.completed ? 'bg-cyber-cyan text-black font-black' : 'bg-cyber-card'}">
+                            ${hw.completed ? '<i class="fa-solid fa-check text-xs"></i>' : ''}
+                        </button>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="px-2 py-0.5 bg-gradient-to-r from-cyber-cyan to-cyber-purple text-black text-[9px] font-black rounded-full">
+                                    TOP ${idx + 1}
+                                </span>
+                                <span class="text-xs font-bold text-white ${hw.completed ? 'line-through opacity-50' : ''}">${hw.name}</span>
                             </div>
-
-                            <button type="button" onclick="setPomodoroTask('${hw.name}', ${hw.duration})" class="px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-xl text-xs font-bold shrink-0 transition-all touch-active flex items-center space-x-1">
-                                <i class="fa-solid fa-stopwatch"></i>
-                                <span class="hidden sm:inline">타이머 세팅</span>
-                            </button>
+                            <span class="text-[10px] text-zinc-400 block mt-0.5">${hw.subject} | ${hw.duration}분 소요</span>
                         </div>
                     </div>
-                `;
-            }).join('');
-            if (window.lucide) lucide.createIcons();
+                    <button onclick="startTaskTimer('${hw.name}', ${hw.duration})" class="px-2.5 py-1 bg-cyber-card hover:bg-zinc-800 text-cyber-cyan text-[10px] font-bold rounded-xl border border-cyber-cyan/30">
+                        타이머 세팅
+                    </button>
+                </div>
+            `).join('');
         }
 
         function toggleTaskComplete(id) {
             const hw = appState.homeworks.find(h => h.id === id);
             if (hw) {
                 hw.completed = !hw.completed;
+
                 if (hw.completed) {
-                    confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+                    const allCompleted = appState.homeworks.length > 0 && appState.homeworks.every(h => h.completed);
+
+                    if (allCompleted) {
+                        triggerGrandFireworks();
+                    } else {
+                        confetti({
+                            particleCount: 80,
+                            spread: 70,
+                            origin: { y: 0.7 },
+                            colors: ['#00F2FE', '#A855F7', '#EC4899', '#FFFFFF']
+                        });
+                    }
                 }
-                generateAIReport();
+                renderRankedCards(appState.calculatedPlan.length > 0 ? appState.calculatedPlan : appState.homeworks);
             }
         }
 
-        function renderTimeline(timelineItems, startMin, totalEndMin) {
-            const visualBar = document.getElementById('timeline-visual-bar');
-            const detailList = document.getElementById('timeline-detail-list');
+        function triggerGrandFireworks() {
+            const duration = 3 * 1000;
+            const animationEnd = Date.now() + duration;
 
-            const totalSpan = totalEndMin - startMin || 1;
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
 
-            visualBar.innerHTML = timelineItems.map(item => {
-                const percent = Math.max((item.duration / totalSpan) * 100, 3);
-                let colorClass = 'bg-brand-500';
-                if (item.type === 'ACADEMY') colorClass = 'bg-accent-purple';
-                if (item.type === 'BREAK') colorClass = 'bg-gray-400 dark:bg-zinc-600';
-
-                return `<div style="width: ${percent}%" class="${colorClass} h-full border-r border-black/20" title="${item.title} (${item.duration}분)"></div>`;
-            }).join('');
-
-            detailList.innerHTML = timelineItems.map(item => {
-                let dotColor = 'bg-brand-500';
-                let textColor = 'text-brand-600 dark:text-brand-400';
-
-                if (item.type === 'ACADEMY') {
-                    dotColor = 'bg-accent-purple';
-                    textColor = 'text-accent-purple';
-                } else if (item.type === 'BREAK') {
-                    dotColor = 'bg-gray-400 dark:bg-zinc-600';
-                    textColor = 'text-gray-500 dark:text-zinc-500';
-                }
-
-                return `
-                    <div class="relative">
-                        <div class="absolute -left-[27px] top-1.5 w-3 h-3 rounded-full ${dotColor} border-2 border-white dark:border-zinc-950"></div>
-                        <div class="text-xs font-bold ${textColor}">${item.start} ~ ${item.end} (${item.duration}분)</div>
-                        <div class="text-sm font-extrabold text-gray-900 dark:text-white mt-0.5">${item.title}</div>
-                    </div>
-                `;
-            }).join('');
+                confetti({
+                    particleCount: 50,
+                    startVelocity: 35,
+                    spread: 360,
+                    origin: { x: Math.random(), y: Math.random() - 0.2 },
+                    colors: ['#00F2FE', '#A855F7', '#EC4899', '#38BDF8']
+                });
+            }, 250);
         }
 
-        function setPomodoroTask(title, minutes) {
-            document.getElementById('timer-task-title').innerText = title;
-            pomodoroSeconds = minutes * 60;
-            updatePomodoroDisplay();
-            showModal('타이머 설정 완료', `'${title}' 숙제가 타이머에 등록되었습니다 (${minutes}분).`);
+        function startTaskTimer(title, minutes) {
+            document.getElementById('live-timer-task-name').innerText = title;
+            timerSeconds = minutes * 60;
+            updateTimerDisplay();
         }
 
-        function updatePomodoroDisplay() {
-            const m = Math.floor(pomodoroSeconds / 60);
-            const s = pomodoroSeconds % 60;
-            document.getElementById('pomo-display').innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        function updateTimerDisplay() {
+            const m = Math.floor(timerSeconds / 60);
+            const s = timerSeconds % 60;
+            document.getElementById('live-timer-display').innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
         }
 
-        function startPomodoro() {
-            if (isPomodoroRunning) return;
-            isPomodoroRunning = true;
-
-            document.getElementById('btn-pomo-start').classList.add('hidden');
-            document.getElementById('btn-pomo-pause').classList.remove('hidden');
-            document.getElementById('timer-status-badge').innerText = '집중 중 🔥';
-            document.getElementById('timer-status-badge').className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-brand-500/20 text-brand-600 dark:text-brand-400';
-
-            pomodoroTimer = setInterval(() => {
-                if (pomodoroSeconds > 0) {
-                    pomodoroSeconds--;
-                    updatePomodoroDisplay();
-                } else {
-                    pausePomodoro();
-                    confetti({ particleCount: 100, spread: 80, origin: { y: 0.5 } });
-                    showModal('집중 세션 완료! 🎉', '수고하셨습니다! 잠시 휴식을 취하세요.');
-                }
-            }, 1000);
+        function toggleTimer() {
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                document.getElementById('btn-timer-toggle').innerHTML = '<i class="fa-solid fa-play"></i>';
+            } else {
+                isTimerRunning = true;
+                document.getElementById('btn-timer-toggle').innerHTML = '<i class="fa-solid fa-pause"></i>';
+                timerInterval = setInterval(() => {
+                    if (timerSeconds > 0) {
+                        timerSeconds--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        isTimerRunning = false;
+                        document.getElementById('btn-timer-toggle').innerHTML = '<i class="fa-solid fa-play"></i>';
+                        triggerGrandFireworks();
+                    }
+                }, 1000);
+            }
         }
 
-        function pausePomodoro() {
-            isPomodoroRunning = false;
-            clearInterval(pomodoroTimer);
-            document.getElementById('btn-pomo-start').classList.remove('hidden');
-            document.getElementById('btn-pomo-pause').classList.add('hidden');
-            document.getElementById('timer-status-badge').innerText = '일시 정지';
-            document.getElementById('timer-status-badge').className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400';
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            document.getElementById('btn-timer-toggle').innerHTML = '<i class="fa-solid fa-play"></i>';
+            timerSeconds = 25 * 60;
+            updateTimerDisplay();
         }
 
-        function resetPomodoro() {
-            pausePomodoro();
-            pomodoroSeconds = 25 * 60;
-            updatePomodoroDisplay();
-            document.getElementById('timer-status-badge').innerText = '대기 중';
-            document.getElementById('timer-status-badge').className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400';
-        }
+        function copySummaryText() {
+            const plan = appState.calculatedPlan.length > 0 ? appState.calculatedPlan : appState.homeworks;
+            let summary = `🔥 [숙 쓱 - AI 숙제 타임어택 플래너] 🔥\n\n`;
+            plan.forEach((hw, idx) => {
+                summary += `TOP ${idx + 1}. ${hw.name} (${hw.subject}, ${hw.duration}분)\n`;
+            });
+            summary += `\n⏱ 총 소요 시간: ${document.getElementById('report-total-hw-time').innerText}\n🚀 클리어 예정 시각: ${document.getElementById('report-finish-time').innerText}`;
 
-        function showModal(title, message) {
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-message').innerText = message;
-            document.getElementById('app-modal').classList.remove('hidden');
-            if (window.lucide) lucide.createIcons();
-        }
-
-        function closeModal() {
-            document.getElementById('app-modal').classList.add('hidden');
-        }
-
-        function resetAllData() {
-            localStorage.removeItem('sukssuk_app_data');
-            appState.homeworks = [];
-            appState.academies = [];
-            renderAcademies();
-            renderHomeworks();
-            switchStep(1);
-        }
-
-        function saveLocalStorage() {
-            try {
-                localStorage.setItem('sukssuk_app_data', JSON.stringify(appState));
-            } catch (e) {}
-        }
-
-        function loadLocalStorage() {
-            try {
-                const data = localStorage.getItem('sukssuk_app_data');
-                if (data) {
-                    appState = { ...appState, ...JSON.parse(data) };
-                }
-            } catch (e) {}
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(summary).then(() => {
+                    showToast('플래너 요약이 클립보드에 복사되었습니다! 🚀');
+                }).catch(() => {
+                    fallbackCopyText(summary);
+                });
+            } else {
+                fallbackCopyText(summary);
+            }
         }
     </script>
-</body>
-</html>
-```
 
-요청하신 '숙 쓱' AI 우선순위 플래너 웹 애플리케이션의 전체 HTML 코드가 전달되었습니다! 혹시 추가하고 싶으신 기능이나 수정 사항이 있다면 언제든 말씀해 주세요.
+</body></html>
